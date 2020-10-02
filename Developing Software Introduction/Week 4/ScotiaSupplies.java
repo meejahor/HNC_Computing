@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
@@ -191,7 +190,7 @@ public class ScotiaSupplies {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         TakeOrder();
 
         if (orderTotal > 0) {
