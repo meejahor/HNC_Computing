@@ -152,7 +152,7 @@ public class ScotiaSupplies {
 
             double discount = orderTotal > 100 ? orderTotal - 100 : 0;
             discount /= 10;
-            discount = (int)Math.round(discount);
+            discount = (int)Math.floor(discount);
             discount *= 2.5;
 
             if (discount > 0) {
