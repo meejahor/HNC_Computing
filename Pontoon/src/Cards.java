@@ -3,15 +3,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Cards {
     final public static int WIDTH = 180;
     final public static int HEIGHT = 270;
 
-    private final JLabel[] cards = new JLabel[52];
-    private int cardLoadingIndex = 0;
+    private final List<Card> cards = new ArrayList<Card>();
 
-    private JLabel LoadCard(String filename) {
+    private void LoadCard(String filename, int value) {
         try {
             BufferedImage bufferedImage = ImageIO.read(getClass().getResource(filename));
             BufferedImage scaledImage = new BufferedImage(WIDTH, HEIGHT, bufferedImage.getType());
@@ -20,10 +21,11 @@ public class Cards {
             g2d.drawImage(bufferedImage, 0, 0, WIDTH, HEIGHT, null);
             g2d.dispose();
             ImageIcon icon = new ImageIcon(scaledImage);
-            return new JLabel(icon);
+            JLabel label = new JLabel(icon);
+            Card card = new Card(value, label);
+            cards.add(card);
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
     }
 
@@ -34,14 +36,14 @@ public class Cards {
     private void LoadSuite(String name) {
         String prefix = "/resources/cards/" + name + "/" + name + "_";
         String resourceName;
-        for (int i = 1; i <= 10; i++) {
-            resourceName = BuildResourceName(prefix, Integer.toString(i));
-            cards[cardLoadingIndex++] = LoadCard(resourceName);
+        for (int value = 1; value <= 10; value++) {
+            resourceName = BuildResourceName(prefix, Integer.toString(value));
+            LoadCard(resourceName, value);
         }
 
-        cards[cardLoadingIndex++] = LoadCard(BuildResourceName(prefix, "j"));
-        cards[cardLoadingIndex++] = LoadCard(BuildResourceName(prefix, "k"));
-        cards[cardLoadingIndex++] = LoadCard(BuildResourceName(prefix, "q"));
+        LoadCard(BuildResourceName(prefix, "j"), 11);
+        LoadCard(BuildResourceName(prefix, "q"), 12);
+        LoadCard(BuildResourceName(prefix, "k"), 13);
     }
 
     public void LoadCards() {
@@ -51,7 +53,7 @@ public class Cards {
         LoadSuite("spades");
     }
 
-    public JLabel GetCard(int index) {
-        return cards[index];
+    public Card GetCard(int index) {
+        return cards.get(index);
     }
 }

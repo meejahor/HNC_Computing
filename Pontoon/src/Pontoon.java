@@ -38,8 +38,8 @@ public class Pontoon {
     }
 
     private void UpdatePlayerCards() {
-        AddCard(m_Cards.GetCard(0), 0, 0);
-        AddCard(m_Cards.GetCard(1), 0 + Cards.WIDTH, 0);
+        AddCard(m_Cards.GetCard(0).m_Label, 0, 0);
+        AddCard(m_Cards.GetCard(1).m_Label, 0 + Cards.WIDTH, 0);
     }
 
     public static void main(String[] args) {
