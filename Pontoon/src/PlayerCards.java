@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ public class PlayerCards {
     private long m_LastTime;
     private double m_DeltaTime;
     private double MILLISECONDS_TO_SECONDS = 0.001;
-    private static final double ACCELERATION = 5000;
 
     private static int MAX_WIDTH = (int)(Card.WIDTH * 3.5);
     private double m_LeftCardPos;
@@ -26,10 +26,10 @@ public class PlayerCards {
 
     ActionListener m_AnimationLoop;
 
-    public PlayerCards(JPanel panel) {
+    public PlayerCards(JPanel panel, int width, int height) {
         m_Panel = panel;
-        m_Width = m_Panel.getWidth();
-        m_Height = m_Panel.getHeight();
+        m_Width = width;
+        m_Height = height;
         m_MidX = m_Width/2;
         m_PlayerCardsMidY = (int)Math.round(m_Height * 0.55);
         SetupPanel();
@@ -56,9 +56,8 @@ public class PlayerCards {
         DrawCard();
         DrawCard();
 
-        for(Card card : m_PlayerHand) {
-            card.SnapToTargetPos();
-        }
+        m_PlayerHand.get(0).SnapToTargetPosWithDelay(1);
+        m_PlayerHand.get(1).SnapToTargetPosWithDelay(1.25);
     }
 
     private void DrawCard() {
@@ -82,7 +81,7 @@ public class PlayerCards {
             x += m_CardWidth;
         }
 
-        newCard.SetPos(m_Width, (int)Math.round(m_RightCardPos));
+        newCard.SetPos(m_Width + Card.HALF_WIDTH, m_PlayerCardsMidY, (int)Math.round(m_RightCardPos));
         m_PlayerHand.add(newCard);
 //        System.out.println(m_RightCardPos);
 //        System.out.println();
@@ -125,8 +124,8 @@ public class PlayerCards {
             half = MAX_WIDTH / 2;
         }
 
-        m_LeftCardPos = m_MidX - half;
-        m_RightCardPos = m_MidX + half - Card.WIDTH;
+        m_LeftCardPos = m_MidX - half + Card.HALF_WIDTH;
+        m_RightCardPos = m_MidX + half - Card.HALF_WIDTH;
 
         m_CardWidth = Card.WIDTH;
 
@@ -148,10 +147,10 @@ public class PlayerCards {
 //        return right;
 //    }
 
-    private void AddCard(JLabel card, int x, int y) {
-        card.setBounds(x, y, Card.WIDTH, Card.HEIGHT);
-        m_Panel.add(card);
-    }
+//    private void AddCard(JLabel card, int x, int y) {
+//        card.setBounds(x, y, Card.WIDTH, Card.HEIGHT);
+////        m_Panel.add(card);
+//    }
 
     private void UpdatePlayerCards() {
         m_Panel.removeAll();
@@ -159,8 +158,8 @@ public class PlayerCards {
         Card card;
         for (int i = numCards-1; i >= 0; i--) {
             card = m_PlayerHand.get(i);
-            card.MoveCard(m_DeltaTime, ACCELERATION);
-            AddCard(card.m_Label, card.m_CurrentX, m_PlayerCardsMidY -Card.HALF_HEIGHT);
+            card.Update(m_DeltaTime);
+//            AddCard(card.m_Label, card.m_X, m_PlayerCardsMidY - Card.HALF_HEIGHT);
         }
         m_Panel.updateUI();
     }
@@ -191,7 +190,7 @@ public class PlayerCards {
             score += card.m_Value;
         }
 
-        for(Card card: m_PlayerHand) {
+        for (Card card: m_PlayerHand) {
             if (card.m_Value == 1) {
                 if (score+10 <= 21) {
                     score += 10;
@@ -205,6 +204,12 @@ public class PlayerCards {
             Pontoon.m_Pontoon.ComputerHasWon();
         } else {
             Pontoon.m_Pontoon.PlayerAndComputerHaveSameScores();
+        }
+    }
+
+    public void RenderCards(Graphics g) {
+        for (Card card: m_PlayerHand) {
+            card.Render(g);
         }
     }
 }

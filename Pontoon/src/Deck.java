@@ -7,8 +7,13 @@ import java.util.Random;
 
 public class Deck {
     private final List<Card> m_Cards = new ArrayList<Card>();
-
     private final Random random = new Random();
+
+    public BufferedImage m_CardBack;
+
+    private void LoadCardBack() {
+        m_CardBack = Pontoon.m_Utils.LoadBufferedImage("/resources/cards/card_back.png");
+    }
 
     private void LoadCard(String filename, int value) {
         BufferedImage bufferedImage = Pontoon.m_Utils.LoadBufferedImage(filename);
@@ -19,7 +24,7 @@ public class Deck {
         g2d.dispose();
         ImageIcon icon = new ImageIcon(scaledImage);
         JLabel label = new JLabel(icon);
-        Card card = new Card(value, label);
+        Card card = new Card(value, label, bufferedImage);
         m_Cards.add(card);
     }
 
@@ -45,6 +50,7 @@ public class Deck {
         LoadSuite("diamonds");
         LoadSuite("hearts");
         LoadSuite("spades");
+        LoadCardBack();
     }
 
     public Card GetCard(int index) {

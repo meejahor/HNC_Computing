@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 public class Pontoon {
     private JFrame m_Frame;
     private JPanel m_PontoonPanel;
-    private JPanel m_PlayerCardsPanel;
+    private PlayerCardsPanel m_PlayerCardsPanel;
     private GameInterfaceUpperPanel m_GameInterfaceUpperPanel;
     private GameInterfaceLowerPanel m_GameInterfaceLowerPanel;
     private JLayeredPane m_LayeredPane;
@@ -23,7 +23,9 @@ public class Pontoon {
     public Pontoon() {
         m_Deck = new Deck();
         m_Deck.LoadCards();
+    }
 
+    private void Init() {
         m_PontoonPanel = new JPanel();
         m_PontoonPanel.setLayout(null);
         m_PontoonPanel.updateUI();
@@ -36,19 +38,19 @@ public class Pontoon {
         m_Frame.setLocationRelativeTo(null);
         m_Frame.setVisible(true);
 
+        m_PlayerCardsPanel = new PlayerCardsPanel();
+        m_PlayerCardsPanel.setLayout(null);
+        m_PlayerCardsPanel.updateUI();
+        m_PlayerCards = new PlayerCards(m_PlayerCardsPanel, m_Frame.getWidth(), m_Frame.getHeight());
+
         m_LayeredPane = new JLayeredPane();
 
         m_PontoonPanel.add(m_LayeredPane);
-        m_LayeredPane.setBounds(0, 0, m_PontoonPanel.getWidth(), m_PontoonPanel.getHeight());
-
-        m_PlayerCardsPanel = new JPanel();
-        m_PlayerCardsPanel.setLayout(null);
-        m_PlayerCardsPanel.updateUI();
+        m_LayeredPane.setBounds(0, 0, m_Frame.getWidth(), m_Frame.getHeight());
 
         m_LayeredPane.add(m_PlayerCardsPanel, Integer.valueOf(0));
-        m_PlayerCardsPanel.setBounds(0, 0, m_PontoonPanel.getWidth(), m_PontoonPanel.getHeight());
+        m_PlayerCardsPanel.setBounds(0, 0, m_Frame.getWidth(), m_Frame.getHeight());
 
-        m_PlayerCards = new PlayerCards(m_PlayerCardsPanel);
         SetupGameInterface();
         SetupYouLose();
 
@@ -122,6 +124,7 @@ public class Pontoon {
 
     public static void main(String[] args) {
         m_Pontoon = new Pontoon();
+        m_Pontoon.Init();
         m_Pontoon.Start();
     }
 }
