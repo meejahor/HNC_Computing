@@ -12,12 +12,12 @@ public class PlayerCards {
     public int m_PlayerCardsMidY;
 
     private JPanel m_Panel;
-    private final List<Card> m_Cards = new ArrayList<Card>();
+    private final List<Card> m_PlayerHand = new ArrayList<Card>();
 
     private long m_LastTime;
     private double m_DeltaTime;
     private double MILLISECONDS_TO_SECONDS = 0.001;
-    private static final double ACCELERATION = 0.1;
+    private static final double ACCELERATION = 5000;
 
     private static int MAX_WIDTH = Card.WIDTH * 3;
     private double m_LeftCardPos;
@@ -38,10 +38,10 @@ public class PlayerCards {
             @Override
             public void actionPerformed(ActionEvent e) {
                 long time = System.currentTimeMillis();
-                time -= m_LastTime;
-                m_DeltaTime = (double)time;
+                m_DeltaTime = (double)time - m_LastTime;
                 m_DeltaTime *= MILLISECONDS_TO_SECONDS;
                 UpdatePlayerCards();
+                m_LastTime = time;
             }
         };
 
@@ -56,7 +56,7 @@ public class PlayerCards {
         DrawCard();
         DrawCard();
 
-        for(Card card : m_Cards) {
+        for(Card card : m_PlayerHand) {
             card.SnapToTargetPos();
         }
     }
@@ -67,7 +67,7 @@ public class PlayerCards {
             return;
         }
 
-        int numCards = m_Cards.size() + 1;
+        int numCards = m_PlayerHand.size() + 1;
         FindCardPositionsAndWidth(numCards);
 //        double x = FindLeftPos(numCards);
 //        double cardWidth = FindCardWidth(numCards);
@@ -76,14 +76,14 @@ public class PlayerCards {
 
         double x = m_LeftCardPos;
 
-        for(Card card : m_Cards) {
+        for(Card card : m_PlayerHand) {
             card.SetTargetPos((int)Math.round(x));
 //            System.out.println(x);
             x += m_CardWidth;
         }
 
-        newCard.SetPos((int)Math.round(m_RightCardPos));
-        m_Cards.add(newCard);
+        newCard.SetPos(m_Width, (int)Math.round(m_RightCardPos));
+        m_PlayerHand.add(newCard);
 //        System.out.println(m_RightCardPos);
 //        System.out.println();
     }
@@ -155,17 +155,56 @@ public class PlayerCards {
 
     private void UpdatePlayerCards() {
         m_Panel.removeAll();
-        int numCards = m_Cards.size();
+        int numCards = m_PlayerHand.size();
         Card card;
         for (int i = numCards-1; i >= 0; i--) {
-            card = m_Cards.get(i);
+            card = m_PlayerHand.get(i);
             card.MoveCard(m_DeltaTime, ACCELERATION);
             AddCard(card.m_Label, card.m_CurrentX, m_PlayerCardsMidY -Card.HALF_HEIGHT);
         }
         m_Panel.updateUI();
     }
 
+    private void CheckIfBust() {
+        int score = 0;
+        for(Card card: m_PlayerHand) {
+            score += card.m_Value;
+        }
+
+        if (score > 21) {
+            Pontoon.m_Pontoon.PlayerHasLost();
+        }
+    }
+
     public void DrawCardButtonPressed() {
+        if (!Pontoon.m_Pontoon.m_PlayerCanDrawCards) {
+            return;
+        }
+
         DrawCard();
+//        CheckIfBust();
+    }
+
+    public void StickButtonPressed() {
+        int score = 0;
+        for(Card card: m_PlayerHand) {
+            score += card.m_Value;
+        }
+
+        for(Card card: m_PlayerHand) {
+            if (card.m_Value == 1) {
+                if (score+10 <= 21) {
+                    score += 10;
+                }
+            }
+        }
+
+        if (score > 18) {
+            Pontoon.m_Pontoon.PlayerHasWon();
+        } else if (score < 18) {
+            Pontoon.m_Pontoon.ComputerHasWon();
+        } else {
+            Pontoon.m_Pontoon.PlayerAndComputerHaveSameScores();
+        }
     }
 }

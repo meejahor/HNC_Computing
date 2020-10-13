@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Pontoon {
@@ -8,11 +9,14 @@ public class Pontoon {
     private GameInterfaceUpperPanel m_GameInterfaceUpperPanel;
     private GameInterfaceLowerPanel m_GameInterfaceLowerPanel;
     private JLayeredPane m_LayeredPane;
+    private YouLose m_YouLose;
 
     public PlayerCards m_PlayerCards;
 
     public static final Utils m_Utils = new Utils();
     public Deck m_Deck;
+
+    public boolean m_PlayerCanDrawCards;
 
     public static Pontoon m_Pontoon;
 
@@ -25,6 +29,7 @@ public class Pontoon {
         m_PontoonPanel.updateUI();
 
         m_Frame = new JFrame("Pontoon");
+        m_Frame.setResizable(false);
         m_Frame.setContentPane(m_PontoonPanel);
         m_Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         m_Frame.setSize(1000, 800);
@@ -45,19 +50,28 @@ public class Pontoon {
 
         m_PlayerCards = new PlayerCards(m_PlayerCardsPanel);
         SetupGameInterface();
+        SetupYouLose();
 
         SetBackground();
     }
 
+    private void SetupYouLose() {
+        m_YouLose = new YouLose();
+        m_YouLose.m_Panel.setVisible(false);
+        m_YouLose.m_Panel.setBackground(new Color(0, 0, 0, 63));
+        m_LayeredPane.add(m_YouLose.m_Panel, Integer.valueOf(3));
+        m_YouLose.m_Panel.setBounds(0, m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT);
+    }
+
     private void SetupGameInterface() {
         m_GameInterfaceUpperPanel = new GameInterfaceUpperPanel();
-        m_GameInterfaceUpperPanel.m_Panel.setOpaque(false);
+//        m_GameInterfaceUpperPanel.m_Panel.setOpaque(false);
         m_LayeredPane.add(m_GameInterfaceUpperPanel.m_Panel, Integer.valueOf(1));
         int upperIUHeight = (m_PontoonPanel.getHeight() / 2) - Card.HALF_HEIGHT;
         m_GameInterfaceUpperPanel.m_Panel.setBounds(0, 0, m_PontoonPanel.getWidth(), upperIUHeight);
 
         m_GameInterfaceLowerPanel = new GameInterfaceLowerPanel();
-        m_GameInterfaceLowerPanel.m_Panel.setOpaque(false);
+//        m_GameInterfaceLowerPanel.m_Panel.setOpaque(false);
         m_LayeredPane.add(m_GameInterfaceLowerPanel.m_Panel, Integer.valueOf(2));
         int lowerIUHeight = m_PontoonPanel.getHeight() - m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT;
         m_GameInterfaceLowerPanel.m_Panel.setBounds(0, m_PontoonPanel.getHeight() - lowerIUHeight, m_PontoonPanel.getWidth(), lowerIUHeight);
@@ -87,8 +101,27 @@ public class Pontoon {
         m_PontoonPanel.updateUI();
     }
 
+    private void Start() {
+        m_PlayerCanDrawCards = true;
+        m_PlayerCards.DrawFirstTwoCards();
+    }
+
+    public void PlayerHasWon() {
+    }
+
+    public void PlayerHasLost() {
+        m_YouLose.m_Panel.setVisible(true);
+        m_PlayerCanDrawCards = false;
+    }
+
+    public void ComputerHasWon() {
+    }
+
+    public void PlayerAndComputerHaveSameScores() {
+    }
+
     public static void main(String[] args) {
         m_Pontoon = new Pontoon();
-        m_Pontoon.m_PlayerCards.DrawFirstTwoCards();
+        m_Pontoon.Start();
     }
 }

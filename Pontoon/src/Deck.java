@@ -15,7 +15,7 @@ public class Deck {
         BufferedImage scaledImage = new BufferedImage(Card.WIDTH, Card.HEIGHT, bufferedImage.getType());
         Graphics2D g2d = scaledImage.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g2d.drawImage(bufferedImage, Card.BORDER, Card.BORDER, Card.WIDTH - Card.BORDER, Card.HEIGHT - Card.BORDER, null);
+        g2d.drawImage(bufferedImage, Card.BORDER, Card.BORDER, Card.WIDTH - (Card.BORDER*2), Card.HEIGHT - (Card.BORDER*2), null);
         g2d.dispose();
         ImageIcon icon = new ImageIcon(scaledImage);
         JLabel label = new JLabel(icon);

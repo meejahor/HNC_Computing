@@ -23,6 +23,12 @@ public class Card {
         speed = 0;
     }
 
+    public void SetPos(int x, int targetX) {
+        m_CurrentX = x;
+        m_TargetX = targetX;
+        speed = 0;
+    }
+
     public void SetTargetPos(int x) {
         m_TargetX = x;
     }
@@ -32,13 +38,13 @@ public class Card {
         double distance = speed * deltaTime;
         if (m_CurrentX < m_TargetX) {
             m_CurrentX += distance;
-            if (m_CurrentX > m_TargetX) {
+            if (m_CurrentX >= m_TargetX) {
                 m_CurrentX = m_TargetX;
                 speed = 0;
             }
         } else {
             m_CurrentX -= distance;
-            if (m_CurrentX < m_TargetX) {
+            if (m_CurrentX <= m_TargetX) {
                 m_CurrentX = m_TargetX;
                 speed = 0;
             }
