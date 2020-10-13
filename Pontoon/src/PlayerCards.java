@@ -19,7 +19,7 @@ public class PlayerCards {
     private double MILLISECONDS_TO_SECONDS = 0.001;
     private static final double ACCELERATION = 5000;
 
-    private static int MAX_WIDTH = Card.WIDTH * 3;
+    private static int MAX_WIDTH = (int)(Card.WIDTH * 3.5);
     private double m_LeftCardPos;
     private double m_RightCardPos;
     private double m_CardWidth;
