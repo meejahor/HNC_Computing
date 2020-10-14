@@ -24,6 +24,7 @@ public class PlayerCards {
     private double m_RightCardPos;
     private double m_CardWidth;
 
+    private static final int MAX_SCORE = 100;
     private int m_CurrentScore;
 
     ActionListener m_AnimationLoop;
@@ -60,10 +61,10 @@ public class PlayerCards {
         m_CurrentScore = 0;
 
         DrawCard();
-        DrawCard();
+//        DrawCard();
 
         m_PlayerHand.get(0).SnapToTargetPosWithDelay(1);
-        m_PlayerHand.get(1).SnapToTargetPosWithDelay(1.25);
+//        m_PlayerHand.get(1).SnapToTargetPosWithDelay(1.25);
     }
 
     private void DrawCard() {
@@ -182,7 +183,7 @@ public class PlayerCards {
     }
 
     public void CheckIfBust() {
-        if (m_CurrentScore > 21) {
+        if (m_CurrentScore > MAX_SCORE) {
             Pontoon.m_Pontoon.PlayerHasLost();
         }
     }
@@ -192,7 +193,17 @@ public class PlayerCards {
 //            return;
 //        }
 
-        if (m_CurrentScore > 21) {
+//        if (m_PlayerHand.size() == 2) {
+//            for (Card card: m_PlayerHand) {
+//                card.RevealWithoutDelay();
+//            }
+//        }
+
+        if (m_PlayerHand.size() == 1) {
+            m_PlayerHand.get(0).RevealWithoutDelay();
+        }
+
+        if (m_CurrentScore > MAX_SCORE) {
             return;
         }
 
@@ -200,6 +211,8 @@ public class PlayerCards {
     }
 
     public void StickButtonPressed() {
+        HandStack.CalculatePositions(m_PlayerHand, m_Width / 3, m_PlayerCardsMidY);
+
         int score = 0;
         for(Card card: m_PlayerHand) {
             score += card.m_Value;
@@ -207,7 +220,7 @@ public class PlayerCards {
 
         for (Card card: m_PlayerHand) {
             if (card.m_Value == 1) {
-                if (score+10 <= 21) {
+                if (score+10 <= MAX_SCORE) {
                     score += 10;
                 }
             }
@@ -222,7 +235,7 @@ public class PlayerCards {
         }
     }
 
-    public void RenderCards(Graphics g) {
+    public void RenderCards(Graphics2D g) {
         for (Card card: m_PlayerHand) {
             card.Render(g);
         }
