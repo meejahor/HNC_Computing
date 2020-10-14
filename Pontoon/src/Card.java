@@ -17,27 +17,28 @@ public class Card {
 
     public final int m_Value;
     public final JLabel m_Label;
-    private int m_X, m_Y, m_TargetX;
+    private double m_X, m_Y, m_TargetX;
     private double speed;
     public final BufferedImage m_Image;
     private boolean m_Moving;
-    private boolean m_ShowCardFront = false;
-    private double m_Scale = 1;
+    private boolean m_ShowCardFront;
+    private double m_Scale;
     private static final double POP_SCALE = 1.2;
     private static final double SHRINK_SPEED = 0.5;
 
-    private double m_PopRectangleScale = POP_SCALE;
+    private double m_PopRectangleScale;
     private double m_PopRectangleSpeed = 4;
 //    private static final double POP_RECTANGLE_DECELERATION = 10;
-    private float m_PopRectangleAlpha = 0;
+    private float m_PopRectangleAlpha;
     private static final float POP_ALPHA_SPEED = 4;
 
-    private double m_DelayBeforeReveal = 0;
+    private double m_DelayBeforeReveal;
 
     public Card(int value, JLabel label, BufferedImage image) {
         m_Value = value;
         m_Label = label;
         m_Image = image;
+        Reset();
     }
 
 //    public void SetPos(int x, int y) {
@@ -47,7 +48,7 @@ public class Card {
 //        speed = 0;
 //    }
 
-    public void SetPos(int x, int y, int targetX) {
+    public void SetPos(double x, double y, double targetX) {
         m_X = x;
         m_Y = y;
         m_TargetX = targetX;
@@ -55,18 +56,28 @@ public class Card {
         speed = 0;
     }
 
-    public void SetTargetPos(int x) {
+    public void SetTargetPos(double x) {
         m_TargetX = x;
         m_Moving = true;
+    }
+
+    private void ShowCard() {
+        m_ShowCardFront = true;
+        m_Scale = POP_SCALE;
+        m_PopRectangleAlpha = 0.75f;
+
+        Pontoon.m_Pontoon.m_NumCardsBeingRevealed--;
+
+        if (Pontoon.m_Pontoon.m_NumCardsBeingRevealed == 0) {
+            Pontoon.m_Pontoon.m_PlayerCards.CheckIfBust();
+        }
     }
 
     public void Update(double deltaTime) {
         if (m_DelayBeforeReveal > 0) {
             m_DelayBeforeReveal -= deltaTime;
             if (m_DelayBeforeReveal < 0) {
-                m_ShowCardFront = true;
-                m_Scale = POP_SCALE;
-                m_PopRectangleAlpha = 0.75f;
+                ShowCard();
             }
             return;
         }
@@ -81,11 +92,10 @@ public class Card {
                 m_Moving = false;
 
                 if (!m_ShowCardFront) {
-                    m_ShowCardFront = true;
-                    m_Scale = POP_SCALE;
-                    m_PopRectangleAlpha = 0.75f;
+                    ShowCard();
                 }
             }
+            return;
         }
 
         if (m_Scale > 1) {
@@ -119,8 +129,8 @@ public class Card {
         if (m_Scale > 1) {
             g.drawImage(
                     image,
-                    m_X - Scale(HALF_WIDTH_WITHOUT_BORDER, m_Scale),
-                    m_Y - Scale(HALF_HEIGHT_WITHOUT_BORDER, m_Scale),
+                    (int)m_X - Scale(HALF_WIDTH_WITHOUT_BORDER, m_Scale),
+                    (int)m_Y - Scale(HALF_HEIGHT_WITHOUT_BORDER, m_Scale),
                     Scale(Card.WIDTH_WITHOUT_BORDER, m_Scale),
                     Scale(Card.HEIGHT_WITHOUT_BORDER, m_Scale),
                     null
@@ -128,8 +138,8 @@ public class Card {
         } else {
             g.drawImage(
                     image,
-                    m_X - HALF_WIDTH_WITHOUT_BORDER,
-                    m_Y - HALF_HEIGHT_WITHOUT_BORDER,
+                    (int)m_X - HALF_WIDTH_WITHOUT_BORDER,
+                    (int)m_Y - HALF_HEIGHT_WITHOUT_BORDER,
                     Card.WIDTH_WITHOUT_BORDER,
                     Card.HEIGHT_WITHOUT_BORDER,
                     null
@@ -142,13 +152,21 @@ public class Card {
             for (int i = 0; i <= 0; i += 1) {
                 int size = i * 5;
                 g.fillRoundRect(
-                        m_X - Scale(HALF_WIDTH_WITHOUT_BORDER - size, m_PopRectangleScale),
-                        m_Y - Scale(HALF_HEIGHT_WITHOUT_BORDER - size, m_PopRectangleScale),
+                        (int)m_X - Scale(HALF_WIDTH_WITHOUT_BORDER - size, m_PopRectangleScale),
+                        (int)m_Y - Scale(HALF_HEIGHT_WITHOUT_BORDER - size, m_PopRectangleScale),
                         Scale(Card.WIDTH_WITHOUT_BORDER - size*2, m_PopRectangleScale),
                         Scale(Card.HEIGHT_WITHOUT_BORDER - size*2, m_PopRectangleScale),
                         50 + size, 50 + size
                 );
             }
         }
+    }
+
+    public void Reset() {
+        m_ShowCardFront = false;
+        m_Scale = 1;
+        m_PopRectangleScale = POP_SCALE;
+        m_PopRectangleAlpha = 0;
+        m_DelayBeforeReveal = 0;
     }
 }

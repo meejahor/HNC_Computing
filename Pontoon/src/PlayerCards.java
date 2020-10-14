@@ -19,19 +19,23 @@ public class PlayerCards {
     private double m_DeltaTime;
     private double MILLISECONDS_TO_SECONDS = 0.001;
 
-    private static int MAX_WIDTH = (int)(Card.WIDTH * 3.5);
+    private int m_MaxWidth;
     private double m_LeftCardPos;
     private double m_RightCardPos;
     private double m_CardWidth;
+
+    private int m_CurrentScore;
 
     ActionListener m_AnimationLoop;
 
     public PlayerCards(JPanel panel, int width, int height) {
         m_Panel = panel;
+        m_MaxWidth = width;
         m_Width = width;
         m_Height = height;
         m_MidX = m_Width/2;
-        m_PlayerCardsMidY = (int)Math.round(m_Height * 0.55);
+//        m_PlayerCardsMidY = (int)Math.round(m_Height * 0.55);
+        m_PlayerCardsMidY = m_Height / 2;
         SetupPanel();
 
         m_AnimationLoop = new ActionListener() {
@@ -53,6 +57,8 @@ public class PlayerCards {
     }
 
     public void DrawFirstTwoCards() {
+        m_CurrentScore = 0;
+
         DrawCard();
         DrawCard();
 
@@ -76,13 +82,17 @@ public class PlayerCards {
         double x = m_LeftCardPos;
 
         for(Card card : m_PlayerHand) {
-            card.SetTargetPos((int)Math.round(x));
+            card.SetTargetPos(x);
 //            System.out.println(x);
             x += m_CardWidth;
         }
 
         newCard.SetPos(m_Width + Card.HALF_WIDTH, m_PlayerCardsMidY, (int)Math.round(m_RightCardPos));
         m_PlayerHand.add(newCard);
+        Pontoon.m_Pontoon.m_NumCardsBeingRevealed++;
+
+        CalculateCurrentScore();
+
 //        System.out.println(m_RightCardPos);
 //        System.out.println();
     }
@@ -120,8 +130,8 @@ public class PlayerCards {
         double width = Card.WIDTH * numCards;
         double half = width/2;
 
-        if (width > MAX_WIDTH) {
-            half = MAX_WIDTH / 2;
+        if (width > m_MaxWidth) {
+            half = m_MaxWidth / 2;
         }
 
         m_LeftCardPos = m_MidX - half + Card.HALF_WIDTH;
@@ -129,8 +139,8 @@ public class PlayerCards {
 
         m_CardWidth = Card.WIDTH;
 
-        if (width > MAX_WIDTH) {
-            m_CardWidth -= (width - MAX_WIDTH) / (numCards - 1);
+        if (width > m_MaxWidth) {
+            m_CardWidth -= (width - m_MaxWidth) / (numCards - 1);
         }
 
 //        System.out.println(width);
@@ -164,24 +174,29 @@ public class PlayerCards {
         m_Panel.updateUI();
     }
 
-    private void CheckIfBust() {
-        int score = 0;
+    private void CalculateCurrentScore() {
+        m_CurrentScore = 0;
         for(Card card: m_PlayerHand) {
-            score += card.m_Value;
+            m_CurrentScore += card.m_Value;
         }
+    }
 
-        if (score > 21) {
+    public void CheckIfBust() {
+        if (m_CurrentScore > 21) {
             Pontoon.m_Pontoon.PlayerHasLost();
         }
     }
 
     public void DrawCardButtonPressed() {
-        if (!Pontoon.m_Pontoon.m_PlayerCanDrawCards) {
+//        if (!Pontoon.m_Pontoon.m_GameInProgress) {
+//            return;
+//        }
+
+        if (m_CurrentScore > 21) {
             return;
         }
 
         DrawCard();
-//        CheckIfBust();
     }
 
     public void StickButtonPressed() {
@@ -211,5 +226,13 @@ public class PlayerCards {
         for (Card card: m_PlayerHand) {
             card.Render(g);
         }
+    }
+
+    public void ReturnCardsToDeck() {
+        for (Card card: m_PlayerHand) {
+            Pontoon.m_Pontoon.m_Deck.ReturnCard(card);
+        }
+
+        m_PlayerHand.clear();
     }
 }

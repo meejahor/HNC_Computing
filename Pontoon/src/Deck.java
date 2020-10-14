@@ -67,4 +67,9 @@ public class Deck {
         m_Cards.remove(index);
         return card;
     }
+
+    public void ReturnCard(Card card) {
+        card.Reset();
+        m_Cards.add(card);
+    }
 }
