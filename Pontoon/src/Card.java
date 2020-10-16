@@ -50,8 +50,9 @@ public class Card {
 
     enum CurrentStage {
         MOVING_IN_LINEUP,
+        STATIC_IN_LINEUP,
+        WAITING_TO_REVEAL,
         REVEALING,
-        IN_LINEUP,
         MOVING_TO_STACK,
         IN_STACK
     }
@@ -81,14 +82,19 @@ public class Card {
         m_CurrentStage = CurrentStage.MOVING_IN_LINEUP;
     }
 
-    private void BeginReveal(double delay) {
-        if (m_ShowCardFront) {
-            return;
-        }
-
-        m_DelayBeforeReveal = delay;
-        m_CurrentStage = CurrentStage.REVEALING;
-    }
+//    private void BeginReveal(double delay) {
+//        if (m_ShowCardFront) {
+//            return;
+//        }
+//
+//        m_DelayBeforeReveal = delay;
+//
+//        if (delay > 0) {
+//            m_CurrentStage = CurrentStage.WAITING_TO_REVEAL;
+//        } else {
+//            m_CurrentStage = CurrentStage.REVEALING;
+//        }
+//    }
 
     private void RevealNow() {
         if (m_ShowCardFront) {
@@ -124,9 +130,17 @@ public class Card {
 
         m_Rotation = m_TargetRotation * m_Lerp;
 
-        double sx = STACK_SCALE - SCALE;
-        sx *= m_Lerp;
-        m_Scale =  SCALE + sx;
+        double pulseScale = SCALE * 1.2;
+
+        if (m_Lerp < 0.2) {
+            double sx = pulseScale - SCALE;
+            sx *= m_Lerp*5;
+            m_Scale = SCALE + sx;
+        } else {
+            double sx = STACK_SCALE - pulseScale;
+            sx *= (m_Lerp-0.2)*1.25;
+            m_Scale = pulseScale + sx;
+        }
 
         return m_Lerp == 1;
     }
@@ -169,12 +183,10 @@ public class Card {
     private void Update_Reveal(double deltaTime) {
         if (m_DelayBeforeReveal > 0) {
             m_DelayBeforeReveal -= deltaTime;
+        }
 
-            if (m_DelayBeforeReveal <= 0) {
-                RevealNow();
-            }
-
-            return;
+        if (m_DelayBeforeReveal <= 0) {
+            RevealNow();
         }
     }
 
@@ -192,19 +204,6 @@ public class Card {
     }
 
     public void Update(double deltaTime) {
-        switch(m_CurrentStage) {
-            case MOVING_IN_LINEUP:
-                MoveInLineup(deltaTime);
-                break;
-
-            case REVEALING:
-                Update_Reveal(deltaTime);
-                break;
-
-            case MOVING_TO_STACK:
-                Update_MoveToStack(deltaTime);
-                break;
-        }
 
         if (m_Scale > SCALE) {
             m_Scale -= SHRINK_SPEED * deltaTime;
@@ -213,28 +212,27 @@ public class Card {
         if (m_PopRectangleAlpha > 0) {
             m_PopRectangleAlpha -= POP_ALPHA_SPEED * deltaTime;
             m_PopRectangleScale += m_PopRectangleSpeed * deltaTime;
-
-//            if ((m_PopRectangleAlpha <= 0) && (m_Scale <= 1)) {
-//                m_CurrentStage = CurrentStage.IN_LINEUP;
-//            }
         }
 
-//        if (m_MoveToStackPosition) {
-//            LerpTowardsStack(deltaTime);
-////            m_Speed += LERP_ACCELERATION * deltaTime;
-////            double distance = m_Speed * deltaTime;
-////
-////            if (MoveAndRotateTowardsStackPos(distance)) {
-//////                m_MoveToStackPosition = false;
-////            };
-//            return;
-//        }
+        switch(m_CurrentStage) {
+            case MOVING_IN_LINEUP:
+                MoveInLineup(deltaTime);
+                break;
+
+            case WAITING_TO_REVEAL:
+                Update_Reveal(deltaTime);
+                break;
+
+            case MOVING_TO_STACK:
+                Update_MoveToStack(deltaTime);
+                return;
+        }
     }
 
     public void SnapToTargetPosWithRevealDelay(double delay) {
         m_X = m_TargetX;
         m_DelayBeforeReveal = delay;
-        m_CurrentStage = CurrentStage.REVEALING;
+        m_CurrentStage = CurrentStage.WAITING_TO_REVEAL;
     }
 
     public void RevealWithoutDelay() {
@@ -245,14 +243,6 @@ public class Card {
         value *= scale;
         return (int)value;
     }
-
-//    enum CurrentStage {
-//        MOVING_IN_LINEUP,
-//        REVEALING,
-//        IN_LINEUP,
-//        MOVING_TO_STACK,
-//        IN_STACK
-//    }
 
 //    private void RenderNormal(Graphics2D g) {
 //        BufferedImage image = m_ShowCardFront ? m_Image : Pontoon.m_Pontoon.m_Deck.m_CardBack;
