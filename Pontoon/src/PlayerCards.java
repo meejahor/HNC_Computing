@@ -95,6 +95,7 @@ public class PlayerCards {
             return null;
         }
         newCard.SetStartPositionAndTargetPosition(m_Width + Card.HALF_WIDTH, m_PlayerCardsMidY, m_Width + Card.HALF_WIDTH);
+        newCard.InstantRevealNoPop();
         m_OpponentHand.add(newCard);
         return newCard;
     }

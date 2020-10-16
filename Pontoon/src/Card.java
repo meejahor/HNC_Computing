@@ -22,6 +22,7 @@ public class Card {
 
     private static final double ACCELERATION = 5000;
     private static final double LERP_ACCELERATION = 10;
+    private static final double LERP_ACCELERATION_MAX = 2;
 
     public final int m_Value;
     public final JLabel m_Label;
@@ -50,9 +51,8 @@ public class Card {
 
     enum CurrentStage {
         MOVING_IN_LINEUP,
-        STATIC_IN_LINEUP,
         WAITING_TO_REVEAL,
-        REVEALING,
+        STATIC_IN_LINEUP,
         MOVING_TO_STACK,
         IN_STACK
     }
@@ -62,7 +62,6 @@ public class Card {
         m_Value = value;
         m_Label = label;
         m_Image = image;
-//        Reset();
     }
 
     public void SetStartPositionAndTargetPosition(double x, double y, double targetX) {
@@ -82,19 +81,10 @@ public class Card {
         m_CurrentStage = CurrentStage.MOVING_IN_LINEUP;
     }
 
-//    private void BeginReveal(double delay) {
-//        if (m_ShowCardFront) {
-//            return;
-//        }
-//
-//        m_DelayBeforeReveal = delay;
-//
-//        if (delay > 0) {
-//            m_CurrentStage = CurrentStage.WAITING_TO_REVEAL;
-//        } else {
-//            m_CurrentStage = CurrentStage.REVEALING;
-//        }
-//    }
+    public void InstantRevealNoPop() {
+        m_ShowCardFront = true;
+        m_CurrentStage = CurrentStage.STATIC_IN_LINEUP;
+    }
 
     private void RevealNow() {
         if (m_ShowCardFront) {
@@ -112,11 +102,12 @@ public class Card {
             Pontoon.m_Pontoon.m_PlayerCards.CheckIfBust();
         }
 
-        m_CurrentStage = CurrentStage.REVEALING;
+        m_CurrentStage = CurrentStage.STATIC_IN_LINEUP;
     }
 
     private boolean LerpTowardsStack(double deltaTime) {
         m_LerpSpeed += LERP_ACCELERATION * deltaTime;
+        m_LerpSpeed = Math.min(m_LerpSpeed, LERP_ACCELERATION_MAX);
         m_Lerp += m_LerpSpeed * deltaTime;
         m_Lerp = Math.min(m_Lerp, 1);
 
@@ -130,44 +121,20 @@ public class Card {
 
         m_Rotation = m_TargetRotation * m_Lerp;
 
-        double pulseScale = SCALE * 1.2;
+        double pulseScale = SCALE * 1.25;
 
-        if (m_Lerp < 0.2) {
+        if (m_Lerp <= 0.5) {
             double sx = pulseScale - SCALE;
-            sx *= m_Lerp*5;
+            sx *= m_Lerp*2;
             m_Scale = SCALE + sx;
         } else {
             double sx = STACK_SCALE - pulseScale;
-            sx *= (m_Lerp-0.2)*1.25;
+            sx *= (m_Lerp-0.5)*2;
             m_Scale = pulseScale + sx;
         }
 
         return m_Lerp == 1;
     }
-
-//    public boolean MoveAndRotateTowardsStackPos(double distance) {
-//        double dx = m_TargetX - m_X;
-//        double dy = m_TargetY - m_Y;
-//        double h = Math.sqrt(dx*dx + dy*dy);
-//
-//        double scale = distance / h;
-//
-//        if (scale > 1) {
-//            m_X = m_TargetX;
-//            m_Y = m_TargetY;
-//            m_Rotation = m_TargetRotation;
-//            return true;
-//        }
-//
-//        double mx = dx * scale;
-//        double my = dy * scale;
-//        m_X += mx;
-//        m_Y += my;
-//
-//        double rx = m_TargetRotation - m_Rotation;
-//
-//        return false;
-//    }
 
     private void MoveInLineup(double deltaTime) {
         m_Speed += ACCELERATION * deltaTime;
@@ -205,15 +172,6 @@ public class Card {
 
     public void Update(double deltaTime) {
 
-        if (m_Scale > SCALE) {
-            m_Scale -= SHRINK_SPEED * deltaTime;
-        }
-
-        if (m_PopRectangleAlpha > 0) {
-            m_PopRectangleAlpha -= POP_ALPHA_SPEED * deltaTime;
-            m_PopRectangleScale += m_PopRectangleSpeed * deltaTime;
-        }
-
         switch(m_CurrentStage) {
             case MOVING_IN_LINEUP:
                 MoveInLineup(deltaTime);
@@ -226,6 +184,15 @@ public class Card {
             case MOVING_TO_STACK:
                 Update_MoveToStack(deltaTime);
                 return;
+        }
+
+        if (m_Scale > SCALE) {
+            m_Scale -= SHRINK_SPEED * deltaTime;
+        }
+
+        if (m_PopRectangleAlpha > 0) {
+            m_PopRectangleAlpha -= POP_ALPHA_SPEED * deltaTime;
+            m_PopRectangleScale += m_PopRectangleSpeed * deltaTime;
         }
     }
 
@@ -244,53 +211,7 @@ public class Card {
         return (int)value;
     }
 
-//    private void RenderNormal(Graphics2D g) {
-//        BufferedImage image = m_ShowCardFront ? m_Image : Pontoon.m_Pontoon.m_Deck.m_CardBack;
-//
-//        AffineTransform backup = g.getTransform();
-//        AffineTransform transform = new AffineTransform();
-//        transform.translate(m_X, m_Y);
-//        transform.scale(m_Scale, m_Scale);
-//        transform.translate(-Card.FULL_SIZE_HALF_WIDTH, -Card.FULL_SIZE_HALF_HEIGHT);
-//        transform.rotate(Math.toRadians(m_Rotation), FULL_SIZE_HALF_WIDTH, FULL_SIZE_HEIGHT);
-//        g.drawImage(image, transform, null);
-//        g.setTransform(backup);
-//
-////        if (m_Scale > 1) {
-////            g.drawImage(
-////                    image,
-////                    (int)m_X - Scale(HALF_WIDTH_WITHOUT_BORDER, m_Scale),
-////                    (int)m_Y - Scale(HALF_HEIGHT_WITHOUT_BORDER, m_Scale),
-////                    Scale(Card.WIDTH_WITHOUT_BORDER, m_Scale),
-////                    Scale(Card.HEIGHT_WITHOUT_BORDER, m_Scale),
-////                    null
-////            );
-////        } else {
-////            g.drawImage(
-////                    image,
-////                    (int)m_X - HALF_WIDTH_WITHOUT_BORDER,
-////                    (int)m_Y - HALF_HEIGHT_WITHOUT_BORDER,
-////                    Card.WIDTH_WITHOUT_BORDER,
-////                    Card.HEIGHT_WITHOUT_BORDER,
-////                    null
-////            );
-////        }
-//    }
-
     public void Render(Graphics2D g) {
-//        switch(m_CurrentStage) {
-//            case MOVING_IN_LINEUP:
-//            case REVEALING:
-//            case IN_LINEUP:
-//                RenderInStack(g);
-//                break;
-//
-//            case MOVING_TO_STACK:
-//            case IN_STACK:
-//                RenderInStack(g);
-//                break;
-//        }
-
         BufferedImage image = m_ShowCardFront ? m_Image : Pontoon.m_Pontoon.m_Deck.m_CardBack;
         AffineTransform backup = g.getTransform();
         AffineTransform transform = new AffineTransform();
@@ -315,15 +236,6 @@ public class Card {
             }
         }
     }
-
-//    public void Reset() {
-//        m_ShowCardFront = false;
-//        m_MoveToStackPosition = false;
-//        m_Scale = 1;
-//        m_PopRectangleScale = POP_SCALE;
-//        m_PopRectangleAlpha = 0;
-//        m_DelayBeforeReveal = 0;
-//    }
 
     public void SetStackTargetPosition(double x, double y, double rotation, double delay) {
         m_StartX = m_X;
