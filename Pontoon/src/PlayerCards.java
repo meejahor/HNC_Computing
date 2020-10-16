@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PlayerCards {
     private static final int MS_60_FPS = 17;
@@ -14,6 +15,7 @@ public class PlayerCards {
 
     private JPanel m_Panel;
     private final List<Card> m_PlayerHand = new ArrayList<Card>();
+    private final List<Card> m_OpponentHand = new ArrayList<Card>();
 
     private long m_LastTime;
     private double m_DeltaTime;
@@ -28,6 +30,8 @@ public class PlayerCards {
     private int m_CurrentScore;
 
     ActionListener m_AnimationLoop;
+
+    private static final int OPPONENT_SCORE = 18;
 
     public PlayerCards(JPanel panel, int width, int height) {
         m_Panel = panel;
@@ -57,14 +61,42 @@ public class PlayerCards {
         timer.start();
     }
 
-    public void DrawFirstTwoCards() {
+    public void DrawOpponentCards() {
+        Random random = new Random();
+        int leftToFind = OPPONENT_SCORE;
+        while (leftToFind > 0) {
+            Card card;
+            do {
+                int value = Pontoon.m_Utils.Random(Math.min(leftToFind+1, 14));
+                int skip = Pontoon.m_Utils.Random(3);
+                card = DrawOpponentCard(value, skip);
+            } while (card == null);
+            leftToFind -= card.m_Value;
+        }
+    }
+
+    public void DrawOpeningHand() {
         m_CurrentScore = 0;
 
         DrawCard();
 //        DrawCard();
+//        DrawCard();
+//        DrawCard();
+//        DrawCard();
+//        DrawCard();
 
-        m_PlayerHand.get(0).SnapToTargetPosWithDelay(1);
+        m_PlayerHand.get(0).SnapToTargetPosWithRevealDelay(1);
 //        m_PlayerHand.get(1).SnapToTargetPosWithDelay(1.25);
+    }
+
+    private Card DrawOpponentCard(int value, int skip) {
+        Card newCard = Pontoon.m_Pontoon.m_Deck.FindAndDrawCard(value, skip);
+        if (newCard == null) {
+            return null;
+        }
+        newCard.SetStartPositionAndTargetPosition(m_Width + Card.HALF_WIDTH, m_PlayerCardsMidY, m_Width + Card.HALF_WIDTH);
+        m_OpponentHand.add(newCard);
+        return newCard;
     }
 
     private void DrawCard() {
@@ -88,7 +120,7 @@ public class PlayerCards {
             x += m_CardWidth;
         }
 
-        newCard.SetPos(m_Width + Card.HALF_WIDTH, m_PlayerCardsMidY, (int)Math.round(m_RightCardPos));
+        newCard.SetStartPositionAndTargetPosition(m_Width + Card.HALF_WIDTH, m_PlayerCardsMidY, (int)Math.round(m_RightCardPos));
         m_PlayerHand.add(newCard);
         Pontoon.m_Pontoon.m_NumCardsBeingRevealed++;
 
@@ -165,12 +197,11 @@ public class PlayerCards {
 
     private void UpdatePlayerCards() {
         m_Panel.removeAll();
-        int numCards = m_PlayerHand.size();
-        Card card;
-        for (int i = numCards-1; i >= 0; i--) {
-            card = m_PlayerHand.get(i);
+        for (Card card: m_PlayerHand) {
             card.Update(m_DeltaTime);
-//            AddCard(card.m_Label, card.m_X, m_PlayerCardsMidY - Card.HALF_HEIGHT);
+        }
+        for (Card card: m_OpponentHand) {
+            card.Update(m_DeltaTime);
         }
         m_Panel.updateUI();
     }
@@ -184,7 +215,7 @@ public class PlayerCards {
 
     public void CheckIfBust() {
         if (m_CurrentScore > MAX_SCORE) {
-            Pontoon.m_Pontoon.PlayerHasLost();
+            Pontoon.m_Pontoon.PlayerHasBust();
         }
     }
 
@@ -211,7 +242,8 @@ public class PlayerCards {
     }
 
     public void StickButtonPressed() {
-        HandStack.CalculatePositions(m_PlayerHand, m_Width / 3, m_PlayerCardsMidY);
+        double delay = HandStack.CalculatePositions(m_PlayerHand, m_Width / 4, m_PlayerCardsMidY, 0);
+        HandStack.CalculatePositions(m_OpponentHand, (m_Width / 4) * 3, m_PlayerCardsMidY, delay);
 
         int score = 0;
         for(Card card: m_PlayerHand) {
@@ -226,9 +258,9 @@ public class PlayerCards {
             }
         }
 
-        if (score > 18) {
+        if (score > OPPONENT_SCORE) {
             Pontoon.m_Pontoon.PlayerHasWon();
-        } else if (score < 18) {
+        } else if (score < OPPONENT_SCORE) {
             Pontoon.m_Pontoon.ComputerHasWon();
         } else {
             Pontoon.m_Pontoon.PlayerAndComputerHaveSameScores();
@@ -239,6 +271,10 @@ public class PlayerCards {
         for (Card card: m_PlayerHand) {
             card.Render(g);
         }
+
+        for (Card card: m_OpponentHand) {
+            card.Render(g);
+        }
     }
 
     public void ReturnCardsToDeck() {
@@ -247,5 +283,11 @@ public class PlayerCards {
         }
 
         m_PlayerHand.clear();
+
+        for (Card card: m_OpponentHand) {
+            Pontoon.m_Pontoon.m_Deck.ReturnCard(card);
+        }
+
+        m_OpponentHand.clear();
     }
 }

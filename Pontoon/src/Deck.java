@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class Deck {
     private final List<Card> m_Cards = new ArrayList<Card>();
-    private final Random random = new Random();
+//    private final Random random = new Random();
 
     public BufferedImage m_CardBack;
 
@@ -62,14 +62,27 @@ public class Deck {
             return null;
         }
 
-        int index = random.nextInt(m_Cards.size());
+        int index = Pontoon.m_Utils.Random(m_Cards.size());
         Card card = GetCard(index);
         m_Cards.remove(index);
         return card;
     }
 
+    public Card FindAndDrawCard(int value, int skip) {
+        for (Card card: m_Cards) {
+            if (card.m_Value == value) {
+                skip --;
+                if (skip < 0) {
+                    m_Cards.remove(card);
+                    return card;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public void ReturnCard(Card card) {
-        card.Reset();
         m_Cards.add(card);
     }
 }
