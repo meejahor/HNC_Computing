@@ -33,7 +33,7 @@ public class GameInterfaceLowerPanel {
     }
 
     public void SetUIStates() {
-        m_Panel.setVisible(Pontoon.m_Pontoon.m_GameState != Pontoon.GameState.MAIN_MENU);
+        m_Panel.setVisible(!Pontoon.m_Pontoon.MenuOrRules());
         m_DrawCardButton.setEnabled(Pontoon.m_Pontoon.m_GameState == Pontoon.GameState.GAME_IN_PROGRESS);
         m_StickButton.setEnabled(Pontoon.m_Pontoon.m_GameState == Pontoon.GameState.GAME_IN_PROGRESS);
         m_PlayAgainButton.setVisible(Pontoon.m_Pontoon.GameHasEnded());

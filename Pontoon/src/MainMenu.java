@@ -17,7 +17,7 @@ public class MainMenu {
         m_RulesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                Pontoon.m_Pontoon.ShowRules();
             }
         });
     }

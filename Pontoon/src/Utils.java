@@ -18,7 +18,7 @@ public class Utils {
         }
     }
 
-    public JLabel LoadImageLabel(String filename) {
+    public JLabel LoadImageAsLabel(String filename) {
         BufferedImage image = LoadBufferedImage(filename);
         ImageIcon icon = new ImageIcon(image);
         JLabel label = new JLabel(icon);

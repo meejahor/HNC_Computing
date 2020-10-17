@@ -1,10 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 public class Pontoon {
     private JFrame m_Frame;
     private MainMenu m_MainMenu;
+    private RulesPanel m_RulesPanel;
     private JPanel m_PontoonPanel;
     private PlayerCardsPanel m_PlayerCardsPanel;
     private CardsBackgroundPanel m_CardsBackgroundPanel;
@@ -14,7 +17,12 @@ public class Pontoon {
     private JLayeredPane m_LayeredPane;
     private YouLose m_YouLose;
 //    private WinText m_WinText;
-    private JLabel m_PlayerWinsLabel, m_OpponentWinsLabel, m_DrawLabel;
+//    private JLabel m_PlayerWinsLabel, m_OpponentWinsLabel, m_DrawLabel;
+
+    private PopImage m_PlayerWins;
+    private PopImage m_OpponentWins;
+    private PopImage m_ItsADraw;
+    private PopImage m_GameStatePopImage = null;
 
     private static final Integer LAYER_PLAYER_CARDS_PANEL = Integer.valueOf(0);
     private static final Integer LAYER_CARDS_BACKGROUND = Integer.valueOf(1);
@@ -25,6 +33,7 @@ public class Pontoon {
     private static final Integer LAYER_OPPONENT_WINS = Integer.valueOf(6);
     private static final Integer LAYER_DRAW = Integer.valueOf(7);
     private static final Integer LAYER_MAIN_MENU = Integer.valueOf(8);
+    private static final Integer LAYER_RULES = Integer.valueOf(9);
 
     private static final int CARD_BACKGROUND_HEIGHT = 270;
     private static final int CARD_BACKGROUND_VERTICAL_OFFSET = 70;
@@ -36,6 +45,7 @@ public class Pontoon {
 
     enum GameState {
         MAIN_MENU,
+        RULES,
         GAME_IN_PROGRESS,
         BUST,
         PLAYER_WINS,
@@ -45,6 +55,12 @@ public class Pontoon {
     public GameState m_GameState;
 
     public int m_NumCardsBeingRevealed;
+
+    private long m_LastTime;
+    private static final double MILLISECONDS_TO_SECONDS = 0.001;
+    private static final int MS_60_FPS = 17;
+    private ActionListener m_AnimationLoop;
+    private Timer m_Timer;
 
     public static Pontoon m_Pontoon;
 
@@ -87,28 +103,79 @@ public class Pontoon {
         SetupYouLose();
         SetupResultLabels();
         SetupMenu();
+        SetupRules();
 
         SetBackground();
 
+        InitUpdateTimer();
+
         m_GameState = GameState.MAIN_MENU;
         UpdateUIStates();
+    }
+
+    private void InitUpdateTimer() {
+        m_AnimationLoop = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                long time = System.currentTimeMillis();
+                double deltaTime = (double)time - m_LastTime;
+                deltaTime *= MILLISECONDS_TO_SECONDS;
+                m_LastTime = time;
+
+                m_PlayerCards.UpdatePlayerCards(deltaTime);
+
+                if (m_GameStatePopImage != null) {
+                    m_GameStatePopImage.Update(deltaTime);
+                }
+            }
+        };
+
+        m_Timer = new Timer(MS_60_FPS, m_AnimationLoop);
+        m_Timer.setRepeats(true);
+    }
+
+    private void StartUpdateTimer() {
+        m_LastTime = System.currentTimeMillis();
+        m_Timer.start();
+    }
+
+    private void StopUpdateTimer() {
+        m_Timer.stop();
     }
 
     private void PositionLabel(JLabel label, int x, int y) {
         int width = label.getIcon().getIconWidth();
         int height = label.getIcon().getIconHeight();
         label.setBounds(x - (width/2), y - (height/2), width, height);
-        System.out.println(width);
+//        System.out.println(width);
     }
 
     private void SetupResultLabels() {
-        m_PlayerWinsLabel = m_Utils.LoadImageLabel("/resources/player_wins.png");
-        m_LayeredPane.add(m_PlayerWinsLabel, LAYER_PLAYER_WINS);
-        PositionLabel(m_PlayerWinsLabel, m_PontoonPanel.getWidth() / 4, m_PlayerCards.m_PlayerCardsMidY);
+        m_PlayerWins = new PopImage(
+                m_Utils.LoadBufferedImage("/resources/player_wins.png"),
+                m_PontoonPanel.getWidth() / 4,
+                m_PlayerCards.m_PlayerCardsMidY
+        );
 
-        m_OpponentWinsLabel = m_Utils.LoadImageLabel("/resources/opponent_wins.png");
-        m_LayeredPane.add(m_OpponentWinsLabel, LAYER_OPPONENT_WINS);
-        PositionLabel(m_OpponentWinsLabel, (m_PontoonPanel.getWidth() / 4) * 3, m_PlayerCards.m_PlayerCardsMidY);
+        m_OpponentWins = new PopImage(
+                m_Utils.LoadBufferedImage("/resources/opponent_wins.png"),
+                (m_PontoonPanel.getWidth() / 4) * 3,
+                m_PlayerCards.m_PlayerCardsMidY
+        );
+
+        m_ItsADraw = new PopImage(
+                m_Utils.LoadBufferedImage("/resources/its_a_draw.png"),
+                (m_PontoonPanel.getWidth() / 2),
+                m_PlayerCards.m_PlayerCardsMidY
+        );
+
+//        m_PlayerWinsLabel = m_Utils.LoadImageLabel("/resources/player_wins.png");
+//        m_LayeredPane.add(m_PlayerWinsLabel, LAYER_PLAYER_WINS);
+//        PositionLabel(m_PlayerWinsLabel, m_PontoonPanel.getWidth() / 4, m_PlayerCards.m_PlayerCardsMidY);
+//
+//        m_OpponentWinsLabel = m_Utils.LoadImageLabel("/resources/opponent_wins.png");
+//        m_LayeredPane.add(m_OpponentWinsLabel, LAYER_OPPONENT_WINS);
+//        PositionLabel(m_OpponentWinsLabel, (m_PontoonPanel.getWidth() / 4) * 3, m_PlayerCards.m_PlayerCardsMidY);
     }
 
     private void SetupMenu() {
@@ -116,6 +183,13 @@ public class Pontoon {
 //        m_MainMenu.m_Panel.setVisible(false);
         m_LayeredPane.add(m_MainMenu.m_Panel, LAYER_MAIN_MENU);
         m_MainMenu.m_Panel.setBounds(0, m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT);
+    }
+
+    private void SetupRules() {
+        m_RulesPanel = new RulesPanel();
+        m_LayeredPane.add(m_RulesPanel.m_Panel, LAYER_RULES);
+        m_RulesPanel.m_Panel.setBounds(0, m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT);
+        m_RulesPanel.Init();
     }
 
     private void SetupYouLose() {
@@ -171,31 +245,40 @@ public class Pontoon {
 
     private void UpdateUIStates() {
         m_MainMenu.m_Panel.setVisible(m_GameState == GameState.MAIN_MENU);
+        m_RulesPanel.m_Panel.setVisible(m_GameState == GameState.RULES);
         m_PlayerCardsPanel.setVisible(m_GameState != GameState.MAIN_MENU);
         m_GameInterfaceUpperPanel.SetUIStates();
         m_GameInterfaceLowerPanel.SetUIStates();
         m_YouLose.m_Panel.setVisible(m_GameState == GameState.BUST);
-        m_PlayerWinsLabel.setVisible(m_GameState == GameState.PLAYER_WINS);
-        m_OpponentWinsLabel.setVisible(m_GameState == GameState.OPPONENT_WINS);
+//        m_PlayerWinsLabel.setVisible(m_GameState == GameState.PLAYER_WINS);
+//        m_OpponentWinsLabel.setVisible(m_GameState == GameState.OPPONENT_WINS);
     }
 
     public void PlayerHasWon() {
         m_GameState = GameState.PLAYER_WINS;
         UpdateUIStates();
+        m_PlayerWins.StartPop();
+        m_GameStatePopImage = m_PlayerWins;
     }
 
     public void ComputerHasWon() {
         m_GameState = GameState.OPPONENT_WINS;
         UpdateUIStates();
+        m_OpponentWins.StartPop();
+        m_GameStatePopImage = m_OpponentWins;
     }
 
     public void PlayerAndComputerHaveSameScores() {
+        m_GameState = GameState.DRAW;
+        UpdateUIStates();
+        m_ItsADraw.StartPop();
+        m_GameStatePopImage = m_ItsADraw;
     }
 
     public static void main(String[] args) {
         m_Pontoon = new Pontoon();
         m_Pontoon.Init();
-        m_Pontoon.NewGame();
+//        m_Pontoon.NewGame();
     }
 
     public void NewGame() {
@@ -205,6 +288,14 @@ public class Pontoon {
         m_PlayerCards.DrawOpeningHand();
         m_GameState = GameState.GAME_IN_PROGRESS;
         UpdateUIStates();
+        m_GameStatePopImage = null;
+        StartUpdateTimer();
+    }
+
+    public boolean MenuOrRules() {
+        boolean ret = m_GameState == GameState.MAIN_MENU;
+        ret |= m_GameState == GameState.RULES;
+        return ret;
     }
 
     public boolean GameHasEnded() {
@@ -217,6 +308,20 @@ public class Pontoon {
 
     public void BackToMenu() {
         m_GameState = GameState.MAIN_MENU;
+        UpdateUIStates();
+        StopUpdateTimer();
+    }
+
+    public void Render(Graphics2D g) {
+        m_PlayerCards.RenderCards(g);
+
+        if (m_GameStatePopImage != null) {
+            m_GameStatePopImage.Render(g);
+        }
+    }
+
+    public void ShowRules() {
+        m_GameState = GameState.RULES;
         UpdateUIStates();
     }
 }

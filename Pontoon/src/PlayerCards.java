@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Random;
 
 public class PlayerCards {
-    private static final int MS_60_FPS = 17;
-
     private int m_Width, m_Height;
     private int m_MidX;
     public int m_PlayerCardsMidY;
@@ -17,10 +15,6 @@ public class PlayerCards {
     private final List<Card> m_PlayerHand = new ArrayList<Card>();
     private final List<Card> m_OpponentHand = new ArrayList<Card>();
 
-    private long m_LastTime;
-    private double m_DeltaTime;
-    private double MILLISECONDS_TO_SECONDS = 0.001;
-
     private int m_MaxWidth;
     private double m_LeftCardPos;
     private double m_RightCardPos;
@@ -28,8 +22,6 @@ public class PlayerCards {
 
     private static final int MAX_SCORE = 100;
     private int m_CurrentScore;
-
-    ActionListener m_AnimationLoop;
 
     private static final int OPPONENT_SCORE = 18;
 
@@ -42,23 +34,6 @@ public class PlayerCards {
 //        m_PlayerCardsMidY = (int)Math.round(m_Height * 0.55);
         m_PlayerCardsMidY = m_Height / 2;
         SetupPanel();
-
-        m_AnimationLoop = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                long time = System.currentTimeMillis();
-                m_DeltaTime = (double)time - m_LastTime;
-                m_DeltaTime *= MILLISECONDS_TO_SECONDS;
-                UpdatePlayerCards();
-                m_LastTime = time;
-            }
-        };
-
-        m_LastTime = System.currentTimeMillis();
-
-        Timer timer = new Timer(MS_60_FPS, m_AnimationLoop);
-        timer.setRepeats(true);
-        timer.start();
     }
 
     public void DrawOpponentCards() {
@@ -196,7 +171,7 @@ public class PlayerCards {
 ////        m_Panel.add(card);
 //    }
 
-    private void UpdatePlayerCards() {
+    public void UpdatePlayerCards(double m_DeltaTime) {
         m_Panel.removeAll();
         for (Card card: m_PlayerHand) {
             card.Update(m_DeltaTime);
