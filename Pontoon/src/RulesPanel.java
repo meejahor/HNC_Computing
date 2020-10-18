@@ -1,6 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
 
+/***
+ * RulesPanel
+ * Bound class for the rules panel
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class RulesPanel {
     public JPanel m_Panel;
     private JLabel m_RulesLabel;

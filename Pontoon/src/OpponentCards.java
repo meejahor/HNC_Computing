@@ -3,11 +3,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * OpponentCards class
+ * Handles the computer opponent's cards
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class OpponentCards {
     public final List<Card> m_Hand = new ArrayList<Card>();
 
+    // draw a random hand adding up to the value of OPPONENT_SCORE
     public void DrawOpeningHand() {
-        Random random = new Random();
         int leftToFind = Pontoon.OPPONENT_SCORE;
         while (leftToFind > 0) {
             Card card;

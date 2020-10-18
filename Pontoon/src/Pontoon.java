@@ -4,6 +4,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
+/***
+ * Pontoon class and program entry point
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class Pontoon {
     private JFrame m_Frame;
     private MainMenu m_MainMenu;
@@ -27,9 +34,6 @@ public class Pontoon {
     private static final Integer LAYER_UPPER_UI = Integer.valueOf(2);
     private static final Integer LAYER_LOWER_UI = Integer.valueOf(3);
     private static final Integer LAYER_YOU_LOSE = Integer.valueOf(4);
-//    private static final Integer LAYER_PLAYER_WINS = Integer.valueOf(5);
-//    private static final Integer LAYER_OPPONENT_WINS = Integer.valueOf(6);
-//    private static final Integer LAYER_DRAW = Integer.valueOf(7);
     private static final Integer LAYER_MAIN_MENU = Integer.valueOf(5);
     private static final Integer LAYER_RULES = Integer.valueOf(6);
 
@@ -129,6 +133,7 @@ public class Pontoon {
         UpdateUIStates();
     }
 
+    // timer function to update animation states and call rendering functions every 1/60s
     private void InitUpdateTimer() {
         m_AnimationLoop = new ActionListener() {
             @Override
@@ -161,13 +166,6 @@ public class Pontoon {
         m_Timer.stop();
     }
 
-    private void PositionLabel(JLabel label, int x, int y) {
-        int width = label.getIcon().getIconWidth();
-        int height = label.getIcon().getIconHeight();
-        label.setBounds(x - (width/2), y - (height/2), width, height);
-//        System.out.println(width);
-    }
-
     private void SetupResultLabels() {
         m_PlayerWins = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/player_wins.png"),
@@ -186,19 +184,10 @@ public class Pontoon {
                 (m_PontoonPanel.getWidth() / 2),
                 m_PlayerCardsMidY
         );
-
-//        m_PlayerWinsLabel = m_Utils.LoadImageLabel("/resources/player_wins.png");
-//        m_LayeredPane.add(m_PlayerWinsLabel, LAYER_PLAYER_WINS);
-//        PositionLabel(m_PlayerWinsLabel, m_PontoonPanel.getWidth() / 4, m_PlayerCards.m_PlayerCardsMidY);
-//
-//        m_OpponentWinsLabel = m_Utils.LoadImageLabel("/resources/opponent_wins.png");
-//        m_LayeredPane.add(m_OpponentWinsLabel, LAYER_OPPONENT_WINS);
-//        PositionLabel(m_OpponentWinsLabel, (m_PontoonPanel.getWidth() / 4) * 3, m_PlayerCards.m_PlayerCardsMidY);
     }
 
     private void SetupMenu() {
         m_MainMenu = new MainMenu();
-//        m_MainMenu.m_Panel.setVisible(false);
         m_LayeredPane.add(m_MainMenu.m_Panel, LAYER_MAIN_MENU);
         m_MainMenu.m_Panel.setBounds(0, m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT_WITH_BORDER);
     }
@@ -220,18 +209,19 @@ public class Pontoon {
 
     private void SetupGameInterface() {
         m_GameInterfaceUpperPanel = new GameInterfaceUpperPanel();
-//        m_GameInterfaceUpperPanel.m_Panel.setOpaque(false);
         m_LayeredPane.add(m_GameInterfaceUpperPanel.m_Panel, LAYER_UPPER_UI);
         int upperIUHeight = m_PlayerCardsMidY - Card.HALF_HEIGHT;
         m_GameInterfaceUpperPanel.m_Panel.setBounds(0, 0, m_PontoonPanel.getWidth(), upperIUHeight);
 
         m_GameInterfaceLowerPanel = new GameInterfaceLowerPanel();
-//        m_GameInterfaceLowerPanel.m_Panel.setOpaque(false);
         m_LayeredPane.add(m_GameInterfaceLowerPanel.m_Panel, LAYER_LOWER_UI);
         int lowerIUHeight = m_PontoonPanel.getHeight() - m_PlayerCardsMidY - Card.HALF_HEIGHT;
         m_GameInterfaceLowerPanel.m_Panel.setBounds(0, m_PontoonPanel.getHeight() - lowerIUHeight, m_PontoonPanel.getWidth(), lowerIUHeight);
     }
 
+    // JPanel doesn't support tiled backgrounds so we set-up a JLabel with the background image and then
+    // add enough copies to fill the width and height of the panel. These are child objects so the panel
+    // handles drawing, we don't need to handle any rendering
     private void SetBackground() {
         BufferedImage bufferedImage = Pontoon.m_Utils.LoadBufferedImage("/resources/felt_texture.jpg");
         ImageIcon icon = new ImageIcon(bufferedImage);
@@ -268,8 +258,6 @@ public class Pontoon {
         m_GameInterfaceUpperPanel.SetUIStates();
         m_GameInterfaceLowerPanel.SetUIStates();
         m_YouLose.m_Panel.setVisible(m_GameState == GameState.BUST);
-//        m_PlayerWinsLabel.setVisible(m_GameState == GameState.PLAYER_WINS);
-//        m_OpponentWinsLabel.setVisible(m_GameState == GameState.OPPONENT_WINS);
     }
 
     public void PlayerHasWon() {
@@ -317,6 +305,7 @@ public class Pontoon {
         return ret;
     }
 
+    // return true if we're in any of the end-game states
     public boolean GameHasEnded() {
         boolean ret = m_GameState == GameState.BUST;
         ret |= m_GameState == GameState.PLAYER_WINS;
@@ -350,14 +339,19 @@ public class Pontoon {
             m_PlayerCards.m_Hand.get(0).RevealWithoutDelay();
         }
 
+        // we start the stacking animations with an incremental delay for each card.
+        // When HandStack.CalculatePositions is called for the player cards, it returns the delay value for the
+        // first of the opponent's cards, which is then passed back to the function
         double delay = HandStack.CalculatePositions(m_PlayerCards.m_Hand, Pontoon.m_Pontoon.m_Width / 4, Pontoon.m_Pontoon.m_PlayerCardsMidY, 0);
         HandStack.CalculatePositions(m_OpponentCards.m_Hand, (Pontoon.m_Pontoon.m_Width / 4) * 3, Pontoon.m_Pontoon.m_PlayerCardsMidY, delay);
 
+        // this calculates the lowest possible score for the player's hand, assuming aces are low...
         int score = 0;
         for(Card card: m_PlayerCards.m_Hand) {
             score += card.m_Value;
         }
-
+        // ...and this checks if any aces can be high without going bust, to give the player the
+        // highest possible score
         for (Card card: m_PlayerCards.m_Hand) {
             if (card.m_Value == 1) {
                 if (score+10 <= MAX_SCORE) {

@@ -2,6 +2,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * PlayerCards class
+ * Handles the player's cards
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class PlayerCards {
 
     public final List<Card> m_Hand = new ArrayList<Card>();
@@ -46,6 +54,8 @@ public class PlayerCards {
         CalculateCurrentScore();
     }
 
+    // if the player has so many cards that they take up more space than allowed, we need to overlap them.
+    // This function calculates the position of the left and right cards, and the spacing required between cards.
     private void FindCardPositionsAndWidth(int numCards) {
         double width = Card.WIDTH_WITH_BORDER * numCards;
         double half = width/2;
@@ -65,13 +75,12 @@ public class PlayerCards {
     }
 
     public void UpdatePlayerCards(double m_DeltaTime) {
-//        m_Panel.removeAll();
         for (Card card: m_Hand) {
             card.Update(m_DeltaTime);
         }
-//        m_Panel.updateUI();
     }
 
+    // this doesn't take high aces in to account, so it calculates the player's lowest possible score
     private void CalculateCurrentScore() {
         m_CurrentScore = 0;
         for(Card card: m_Hand) {
@@ -86,7 +95,6 @@ public class PlayerCards {
     }
 
     public void DrawCardButtonPressed() {
-//        System.out.println("pressed");
         if (m_Hand.size() == 1) {
             m_Hand.get(0).RevealWithoutDelay();
         }

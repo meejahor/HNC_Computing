@@ -2,6 +2,13 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
+/***
+ * PopImage class to handle a single image that can pop in to view, for displaying the game result
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class PopImage {
     private BufferedImage m_Image;
     private double m_HalfWidth, m_HalfHeight;
@@ -30,6 +37,7 @@ public class PopImage {
         m_Lerp += m_LerpSpeed * deltaTime;
         m_Lerp = Math.min(m_Lerp, 1);
 
+        // split stage lerp to make the image go bigger before lerping to target size
         if (m_Lerp <= 0.8) {
             double sx = POP_SCALE - 1;
             m_Scale = 1.2 * (m_Lerp * 1.25);

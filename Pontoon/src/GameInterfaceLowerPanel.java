@@ -2,6 +2,14 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/***
+ * GameInterfaceLowerPanel
+ * Bound class for the panel with the in-game buttons at the bottom of the screen
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class GameInterfaceLowerPanel {
     private JButton m_DrawCardButton;
     public JPanel m_Panel;
