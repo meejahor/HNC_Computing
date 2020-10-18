@@ -71,7 +71,7 @@ public class Pontoon {
     private ActionListener m_AnimationLoop;
     private Timer m_Timer;
 
-    public static final int MAX_SCORE = 100;
+    public static final int MAX_SCORE = 21;
     public static final int OPPONENT_SCORE = 18;
 
     public static Pontoon m_Pontoon;
@@ -167,22 +167,24 @@ public class Pontoon {
     }
 
     private void SetupResultLabels() {
+        int y = m_PlayerCardsMidY + (Card.HALF_HEIGHT / 4);
+
         m_PlayerWins = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/player_wins.png"),
                 m_PontoonPanel.getWidth() / 4,
-                m_PlayerCardsMidY
+                y
         );
 
         m_OpponentWins = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/opponent_wins.png"),
                 (m_PontoonPanel.getWidth() / 4) * 3,
-                m_PlayerCardsMidY
+                y
         );
 
         m_ItsADraw = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/its_a_draw.png"),
                 (m_PontoonPanel.getWidth() / 2),
-                m_PlayerCardsMidY
+                y
         );
     }
 
@@ -284,7 +286,7 @@ public class Pontoon {
     public static void main(String[] args) {
         m_Pontoon = new Pontoon();
         m_Pontoon.Init();
-        m_Pontoon.NewGame();
+//        m_Pontoon.NewGame();
     }
 
     public void NewGame() {
@@ -335,9 +337,14 @@ public class Pontoon {
     }
 
     public void StickButtonPressed() {
-        if (m_PlayerCards.m_Hand.size() == 1) {
-            m_PlayerCards.m_Hand.get(0).RevealWithoutDelay();
+        if (m_NumCardsBeingRevealed > 0) {
+            return;
         }
+
+//        m_PlayerCards.RevealAllCards();
+//        if (m_PlayerCards.m_Hand.size() == 1) {
+//            m_PlayerCards.m_Hand.get(0).RevealWithoutDelay();
+//        }
 
         // we start the stacking animations with an incremental delay for each card.
         // When HandStack.CalculatePositions is called for the player cards, it returns the delay value for the

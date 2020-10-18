@@ -112,6 +112,12 @@ public class PlayerCards {
         }
     }
 
+    public void RevealAllCards() {
+        for (Card card: m_Hand) {
+            card.RevealWithoutDelay();
+        }
+    }
+
     public void ReturnCardsToDeck() {
         for (Card card: m_Hand) {
             Pontoon.m_Pontoon.m_Deck.ReturnCard(card);
