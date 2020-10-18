@@ -290,8 +290,6 @@ public class Pontoon {
     }
 
     public void NewGame() {
-        m_PlayerCards.ReturnCardsToDeck();
-        m_OpponentCards.ReturnCardsToDeck();
         m_NumCardsBeingRevealed = 0;
         m_PlayerCards.DrawOpeningHand();
         m_OpponentCards.DrawOpeningHand();
@@ -317,6 +315,8 @@ public class Pontoon {
     }
 
     public void BackToMenu() {
+        m_PlayerCards.ReturnCardsToDeck();
+        m_OpponentCards.ReturnCardsToDeck();
         m_GameState = GameState.MAIN_MENU;
         UpdateUIStates();
         StopUpdateTimer();
