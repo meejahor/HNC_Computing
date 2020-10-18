@@ -16,8 +16,6 @@ public class Pontoon {
     private JLabel m_WinTextPanel;
     private JLayeredPane m_LayeredPane;
     private YouLose m_YouLose;
-//    private WinText m_WinText;
-//    private JLabel m_PlayerWinsLabel, m_OpponentWinsLabel, m_DrawLabel;
 
     private PopImage m_PlayerWins;
     private PopImage m_OpponentWins;
@@ -29,16 +27,23 @@ public class Pontoon {
     private static final Integer LAYER_UPPER_UI = Integer.valueOf(2);
     private static final Integer LAYER_LOWER_UI = Integer.valueOf(3);
     private static final Integer LAYER_YOU_LOSE = Integer.valueOf(4);
-    private static final Integer LAYER_PLAYER_WINS = Integer.valueOf(5);
-    private static final Integer LAYER_OPPONENT_WINS = Integer.valueOf(6);
-    private static final Integer LAYER_DRAW = Integer.valueOf(7);
-    private static final Integer LAYER_MAIN_MENU = Integer.valueOf(8);
-    private static final Integer LAYER_RULES = Integer.valueOf(9);
+//    private static final Integer LAYER_PLAYER_WINS = Integer.valueOf(5);
+//    private static final Integer LAYER_OPPONENT_WINS = Integer.valueOf(6);
+//    private static final Integer LAYER_DRAW = Integer.valueOf(7);
+    private static final Integer LAYER_MAIN_MENU = Integer.valueOf(5);
+    private static final Integer LAYER_RULES = Integer.valueOf(6);
 
     private static final int CARD_BACKGROUND_HEIGHT = 270;
     private static final int CARD_BACKGROUND_VERTICAL_OFFSET = 70;
 
+    public int m_Width, m_Height;
+    public int m_MidX;
+    public int m_PlayerCardsMidY;
+
+    public int m_MaxWidth;
+
     public PlayerCards m_PlayerCards;
+    public OpponentCards m_OpponentCards;
 
     public static final Utils m_Utils = new Utils();
     public Deck m_Deck;
@@ -62,6 +67,9 @@ public class Pontoon {
     private ActionListener m_AnimationLoop;
     private Timer m_Timer;
 
+    public static final int MAX_SCORE = 100;
+    public static final int OPPONENT_SCORE = 18;
+
     public static Pontoon m_Pontoon;
 
     public Pontoon() {
@@ -82,10 +90,18 @@ public class Pontoon {
         m_Frame.setLocationRelativeTo(null);
         m_Frame.setVisible(true);
 
+        m_Width = m_Frame.getWidth();
+        m_Height = m_Frame.getHeight();
+        m_MaxWidth = m_Frame.getWidth();
+        m_MidX = m_Width/2;
+        m_PlayerCardsMidY = m_Height / 2;
+
         m_PlayerCardsPanel = new PlayerCardsPanel();
+        m_PlayerCardsPanel.setOpaque(false);
         m_PlayerCardsPanel.setLayout(null);
         m_PlayerCardsPanel.updateUI();
-        m_PlayerCards = new PlayerCards(m_PlayerCardsPanel, m_Frame.getWidth(), m_Frame.getHeight());
+        m_PlayerCards = new PlayerCards();
+        m_OpponentCards = new OpponentCards();
 
         m_LayeredPane = new JLayeredPane();
 
@@ -97,7 +113,7 @@ public class Pontoon {
         m_LayeredPane.setBounds(0, 0, m_Frame.getWidth(), m_Frame.getHeight());
 
         m_LayeredPane.add(m_PlayerCardsPanel, LAYER_PLAYER_CARDS_PANEL);
-        m_PlayerCardsPanel.setBounds(0, 0, m_Frame.getWidth(), m_Frame.getHeight());
+        m_PlayerCardsPanel.setBounds(0, 0, m_Width, m_Height);
 
         SetupGameInterface();
         SetupYouLose();
@@ -123,6 +139,8 @@ public class Pontoon {
                 m_LastTime = time;
 
                 m_PlayerCards.UpdatePlayerCards(deltaTime);
+                m_OpponentCards.UpdateOpponentCards(deltaTime);
+                m_PlayerCardsPanel.updateUI();
 
                 if (m_GameStatePopImage != null) {
                     m_GameStatePopImage.Update(deltaTime);
@@ -154,19 +172,19 @@ public class Pontoon {
         m_PlayerWins = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/player_wins.png"),
                 m_PontoonPanel.getWidth() / 4,
-                m_PlayerCards.m_PlayerCardsMidY
+                m_PlayerCardsMidY
         );
 
         m_OpponentWins = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/opponent_wins.png"),
                 (m_PontoonPanel.getWidth() / 4) * 3,
-                m_PlayerCards.m_PlayerCardsMidY
+                m_PlayerCardsMidY
         );
 
         m_ItsADraw = new PopImage(
                 m_Utils.LoadBufferedImage("/resources/its_a_draw.png"),
                 (m_PontoonPanel.getWidth() / 2),
-                m_PlayerCards.m_PlayerCardsMidY
+                m_PlayerCardsMidY
         );
 
 //        m_PlayerWinsLabel = m_Utils.LoadImageLabel("/resources/player_wins.png");
@@ -182,13 +200,13 @@ public class Pontoon {
         m_MainMenu = new MainMenu();
 //        m_MainMenu.m_Panel.setVisible(false);
         m_LayeredPane.add(m_MainMenu.m_Panel, LAYER_MAIN_MENU);
-        m_MainMenu.m_Panel.setBounds(0, m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT);
+        m_MainMenu.m_Panel.setBounds(0, m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT_WITH_BORDER);
     }
 
     private void SetupRules() {
         m_RulesPanel = new RulesPanel();
         m_LayeredPane.add(m_RulesPanel.m_Panel, LAYER_RULES);
-        m_RulesPanel.m_Panel.setBounds(0, m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT);
+        m_RulesPanel.m_Panel.setBounds(0, m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT_WITH_BORDER);
         m_RulesPanel.Init();
     }
 
@@ -197,20 +215,20 @@ public class Pontoon {
         m_YouLose.m_Panel.setVisible(false);
         m_YouLose.m_Panel.setBackground(new Color(0, 0, 0, 63));
         m_LayeredPane.add(m_YouLose.m_Panel, LAYER_YOU_LOSE);
-        m_YouLose.m_Panel.setBounds(0, m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT);
+        m_YouLose.m_Panel.setBounds(0, m_PlayerCardsMidY - Card.HALF_HEIGHT, m_PontoonPanel.getWidth(), Card.HEIGHT_WITH_BORDER);
     }
 
     private void SetupGameInterface() {
         m_GameInterfaceUpperPanel = new GameInterfaceUpperPanel();
 //        m_GameInterfaceUpperPanel.m_Panel.setOpaque(false);
         m_LayeredPane.add(m_GameInterfaceUpperPanel.m_Panel, LAYER_UPPER_UI);
-        int upperIUHeight = m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT;
+        int upperIUHeight = m_PlayerCardsMidY - Card.HALF_HEIGHT;
         m_GameInterfaceUpperPanel.m_Panel.setBounds(0, 0, m_PontoonPanel.getWidth(), upperIUHeight);
 
         m_GameInterfaceLowerPanel = new GameInterfaceLowerPanel();
 //        m_GameInterfaceLowerPanel.m_Panel.setOpaque(false);
         m_LayeredPane.add(m_GameInterfaceLowerPanel.m_Panel, LAYER_LOWER_UI);
-        int lowerIUHeight = m_PontoonPanel.getHeight() - m_PlayerCards.m_PlayerCardsMidY - Card.HALF_HEIGHT;
+        int lowerIUHeight = m_PontoonPanel.getHeight() - m_PlayerCardsMidY - Card.HALF_HEIGHT;
         m_GameInterfaceLowerPanel.m_Panel.setBounds(0, m_PontoonPanel.getHeight() - lowerIUHeight, m_PontoonPanel.getWidth(), lowerIUHeight);
     }
 
@@ -278,14 +296,15 @@ public class Pontoon {
     public static void main(String[] args) {
         m_Pontoon = new Pontoon();
         m_Pontoon.Init();
-//        m_Pontoon.NewGame();
+        m_Pontoon.NewGame();
     }
 
     public void NewGame() {
         m_PlayerCards.ReturnCardsToDeck();
+        m_OpponentCards.ReturnCardsToDeck();
         m_NumCardsBeingRevealed = 0;
-        m_PlayerCards.DrawOpponentCards();
         m_PlayerCards.DrawOpeningHand();
+        m_OpponentCards.DrawOpeningHand();
         m_GameState = GameState.GAME_IN_PROGRESS;
         UpdateUIStates();
         m_GameStatePopImage = null;
@@ -314,6 +333,7 @@ public class Pontoon {
 
     public void Render(Graphics2D g) {
         m_PlayerCards.RenderCards(g);
+        m_OpponentCards.RenderCards(g);
 
         if (m_GameStatePopImage != null) {
             m_GameStatePopImage.Render(g);
@@ -323,5 +343,35 @@ public class Pontoon {
     public void ShowRules() {
         m_GameState = GameState.RULES;
         UpdateUIStates();
+    }
+
+    public void StickButtonPressed() {
+        if (m_PlayerCards.m_Hand.size() == 1) {
+            m_PlayerCards.m_Hand.get(0).RevealWithoutDelay();
+        }
+
+        double delay = HandStack.CalculatePositions(m_PlayerCards.m_Hand, Pontoon.m_Pontoon.m_Width / 4, Pontoon.m_Pontoon.m_PlayerCardsMidY, 0);
+        HandStack.CalculatePositions(m_OpponentCards.m_Hand, (Pontoon.m_Pontoon.m_Width / 4) * 3, Pontoon.m_Pontoon.m_PlayerCardsMidY, delay);
+
+        int score = 0;
+        for(Card card: m_PlayerCards.m_Hand) {
+            score += card.m_Value;
+        }
+
+        for (Card card: m_PlayerCards.m_Hand) {
+            if (card.m_Value == 1) {
+                if (score+10 <= MAX_SCORE) {
+                    score += 10;
+                }
+            }
+        }
+
+        if (score > OPPONENT_SCORE) {
+            Pontoon.m_Pontoon.PlayerHasWon();
+        } else if (score < OPPONENT_SCORE) {
+            Pontoon.m_Pontoon.ComputerHasWon();
+        } else {
+            Pontoon.m_Pontoon.PlayerAndComputerHaveSameScores();
+        }
     }
 }

@@ -1,5 +1,14 @@
 import java.util.List;
 
+/**
+ * HandStack class
+ * Calculates the target position and rotation for every card in a player's hand to put them in to a
+ * fan stack at the end of the game
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class HandStack {
 
     private static final double SPACING = 20;

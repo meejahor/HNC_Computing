@@ -20,7 +20,7 @@ public class GameInterfaceLowerPanel {
         m_StickButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Pontoon.m_Pontoon.m_PlayerCards.StickButtonPressed();
+                Pontoon.m_Pontoon.StickButtonPressed();
             }
         });
 

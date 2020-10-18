@@ -9,8 +9,8 @@ public class PopImage {
     private double m_Scale;
     private double m_Lerp;
     private double m_LerpSpeed;
-    private static final double LERP_SPEED = 1;
     private static final double LERP_ACCELERATION = 5;
+    private static final double POP_SCALE = 1.1;
 
     public PopImage(BufferedImage image, int x, int y) {
         m_Image = image;
@@ -31,10 +31,10 @@ public class PopImage {
         m_Lerp = Math.min(m_Lerp, 1);
 
         if (m_Lerp <= 0.8) {
-            double sx = 1.1 - 1;
+            double sx = POP_SCALE - 1;
             m_Scale = 1.2 * (m_Lerp * 1.25);
         } else {
-            double sx = 1 - 1.1;
+            double sx = 1 - POP_SCALE;
             sx *= (m_Lerp - 0.8) * 5;
             m_Scale = 1 + sx;
         }

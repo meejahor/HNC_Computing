@@ -1,13 +1,17 @@
-import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+/**
+ * Deck object
+ * Loads and manages an array of Card objects
+ *
+ * @author      Andrew Smith <meejahor@gmail.com>
+ * @version     1.0
+ * @since       1.0
+ */
 public class Deck {
     private final List<Card> m_Cards = new ArrayList<Card>();
-//    private final Random random = new Random();
 
     public BufferedImage m_CardBack;
 
@@ -16,15 +20,7 @@ public class Deck {
     }
 
     private void LoadCard(String filename, int value) {
-        BufferedImage bufferedImage = Pontoon.m_Utils.LoadBufferedImage(filename);
-        BufferedImage scaledImage = new BufferedImage(Card.WIDTH, Card.HEIGHT, bufferedImage.getType());
-        Graphics2D g2d = scaledImage.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g2d.drawImage(bufferedImage, Card.BORDER, Card.BORDER, Card.WIDTH - (Card.BORDER*2), Card.HEIGHT - (Card.BORDER*2), null);
-        g2d.dispose();
-        ImageIcon icon = new ImageIcon(scaledImage);
-        JLabel label = new JLabel(icon);
-        Card card = new Card(value, label, bufferedImage);
+        Card card = new Card(value, filename);
         m_Cards.add(card);
     }
 
