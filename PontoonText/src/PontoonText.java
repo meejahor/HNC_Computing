@@ -25,6 +25,15 @@ public class PontoonText {
         int opponentScore = 18; // the assignment said to always give the opponent a score of 18
         int newCardValue;
 
+        // the player gets two cards in their opening hand, so we need to draw one card before the game loop starts
+
+        // get the first card value
+        newCardValue = DrawCard();
+        // tell the player what it was
+        System.out.println("You drew card: " + newCardValue);
+        // add it to the player's current score
+        playerScore += newCardValue;
+
         // start of repeating loop, see 'while' statement below for end point of loop
         do {
             // get the new card value
