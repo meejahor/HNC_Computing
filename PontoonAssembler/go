@@ -1,0 +1,7 @@
+#as pontoon.asm -o pontoon.o
+#ld pontoon.o -o pontoon -macosx_version_min 10.15 -lSystem
+
+nasm -fmacho64 pontoon.asm
+ld -macosx_version_min 10.15 -lSystem -o pontoon pontoon.o -no_pie
+./pontoon
+
