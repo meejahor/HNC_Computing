@@ -187,12 +187,9 @@ db 10
 val_Score: dq 0
 
 buf: db 0
-.len: equ $ - buf
 
 t_val:
-    .seconds dq 0
-    .micro dw 0
-t_zone: times 2 dq 0
-t_absolute: dq 0
+.seconds dq 0
+.micro dw 0
 
 rand: dw 0
