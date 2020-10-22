@@ -130,7 +130,7 @@ _print:
 _getTime:
     ; store system time in t_val
     mov rax, 0x2000074
-    lea rdi, [t_val]
+    mov rdi, t_val
     xor rsi, rsi
     syscall
     ret
