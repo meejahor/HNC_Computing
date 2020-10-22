@@ -3,4 +3,5 @@
 
 nasm -fmacho64 pontoon.asm
 ld -macosx_version_min 10.15 -lSystem -o pontoon pontoon.o -no_pie
-./pontoon; echo $?
+./pontoon
+
