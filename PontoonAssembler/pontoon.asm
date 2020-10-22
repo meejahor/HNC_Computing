@@ -22,25 +22,46 @@ _main:
     ; mov rdx, buf.len
     ; syscall
 
-    call Seed
-    ; call Random
+    call GetTime
+    call Random
 
     mov rax, 0x2000001 ; exit
-    mov rdi, [t_val.micro]
+    mov rdi, [rand]
     syscall
 
-Seed:
+GetTime:
+    ; store system time in t_val
     mov rax, 0x2000074
     lea rdi, [t_val]
     xor rsi, rsi
-    ; lea rsi, [t_zone]
-    ; lea rdx, [t_absolute]
     syscall
     ret
 
-; Random:
-;     mov rax
+Random:
+    ; remember previous time
+    mov rax, [t_val.micro]
+    push rax
+    ; get new time
+    call GetTime
+    ; get previous time back
+    pop rax
+    ; add new to previous to make new seed
+    add rax, [t_val.micro]
+    ; and save it
+    mov [t_val.micro], rax
 
+    ; current seed is still in rax, divide by 10
+    xor rdx, rdx
+    mov rcx, 10
+    div rcx
+
+    ; rdx is the remainder, in the range 0-9
+    ; add 1 to put it in the range 1-10
+    add rdx, 1
+
+    ; store remainder as random number
+    mov [rand], rdx
+    ret
 
 section .data
 
