@@ -4,35 +4,22 @@ global _main
 section .text
 
 _main:
+    ; initialise the random number seed
+    call _getTime
+
+    ; show welcome message
     mov rsi, str_Welcome
     mov rdx, str_Welcome.len
     call _print
 
-    ; mov rax, 0x2000003 ; read
-    ; mov rdi, 0 ; stdin
-    ; mov rsi, buf
-    ; mov rdx, buf.len
-    ; syscall
-
-    ; mov rax, 0x2000004 ; write
-    ; mov rdi, 1 ; stdout
-    ; mov rsi, buf
-    ; mov rdx, buf.len
-    ; syscall
-
-    ; initialise the random number seed
-    call _getTime
-
+    ; show opening hand
     mov rsi, str_OpeningHand
     mov rdx, str_OpeningHand.len
     call _print
 
-    ; get a random number
+    ; get a random number and add it to the player's score
     call _random
-    mov rax, [val_Score]
-    mov rdx, [rand]
-    add rax, rdx
-    mov [val_Score], rax
+    call _addRandomToScore
     ; and print it
     mov rax, [rand]
     call _printNumber
@@ -42,26 +29,37 @@ _main:
     mov rdx, str_And.len
     call _print
 
-    ; get another random number
+    ; get another random number and add it to the player's score
     call _random
-    mov rax, [val_Score]
-    mov rdx, [rand]
-    add rax, rdx
-    mov [val_Score], rax
+    call _addRandomToScore
     ; and print it
     mov rax, [rand]
     call _printNumber
 
+    ; start a new line
     call _newLine
 
+    ; show current score
+    mov rsi, str_CurrentTotal
+    mov rdx, str_CurrentTotal.len
+    call _print
     mov rax, [val_Score]
     call _printNumber
 
+    ; start a new line
     call _newLine
 
+    ; finished
     mov rax, 0x2000001 ; exit
-    mov rdi, [rand]
+    mov rdi, 0
     syscall
+    ret
+
+_addRandomToScore:
+    ; add the last random value to the player's score
+    mov rax, [val_Score]
+    add rax, [rand]
+    mov [val_Score], rax
     ret
 
 _printNumber:
@@ -73,8 +71,7 @@ _printNumber:
 .loop:
     ; divide ax by divisor
     xor rdx, rdx
-    mov rcx, r8
-    div rcx
+    div r8
     ; rdx is the remainder, which we store for later
     push rdx
     ; if we've found anything other than 0 then set r9 to 1
@@ -164,67 +161,38 @@ _random:
     mov [rand], rdx
     ret
 
-_printValue:
-    ; if value is less than 10 then go and do a straight ASCII conversion
-    cmp rax, 10
-    jl _printValueLessThan10
-    ; otherwise print '10'
-    mov rsi, str_Ten
-    mov rdx, 2
-    call _print
-    ret
-_printValueLessThan10:
-    ; put the ASCII code for 0 in rdx
-    mov rdx, '0'
-    ; and add it to rax
-    add rax, rdx
-    ; rax now contans the ASCII code for our random number
-    ; store it
-    mov [buf], rax
-    ; and print it
-    mov rsi, buf
-    mov rdx, 1
-    call _print
-    ret
-
 section .data
 
-str_Welcome:            db "Welcome to Pontoon!", 10
-.len: equ               $ - str_Welcome
+str_Welcome:
+db "Welcome to Pontoon!", 10
+.len: equ $ - str_Welcome
 
-str_OpeningHand:        db "Your opening hand is: "
-.len: equ               $ - str_OpeningHand
+str_OpeningHand:
+db "Your opening hand is: "
+.len: equ $ - str_OpeningHand
 
-str_And:                db " and "
-.len: equ               $ - str_And
+str_And:
+db " and "
+.len: equ $ - str_And
 
-str_Total:              db "Total: "
-.len: equ               $ - str_Total
+str_CurrentTotal:
+db "Current total: "
+.len: equ $ - str_CurrentTotal
 
-str_Ten:                db "10"
-str_Newline:            db 10
+str_Ten:
+db "10"
+str_Newline:
+db 10
 
 val_Score: dq 0
 
-buf:    db      2
-.len:   equ     $ - buf
-
-; struc t_val
-;     seconds: resw 1
-; endstruc
+buf: db 0
+.len: equ $ - buf
 
 t_val:
     .seconds dq 0
     .micro dw 0
 t_zone: times 2 dq 0
 t_absolute: dq 0
+
 rand: dw 0
-
-; struct:
-;     istruc t_val
-;         at seconds, dw 0
-;     iend
-
-; t_val:
-;     seconds:    qword   0
-;     micro:      dword   0
