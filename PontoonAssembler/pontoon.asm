@@ -32,7 +32,6 @@ _main:
     mov rdx, str_And.len
     call _print
 
-_gameLoop:
     ; get another random number and add it to the player's score
     call _random
     call _addRandomToScore
@@ -139,7 +138,7 @@ _drawNextCard:
     ; start a new line
     call _newLine
     ; return to the game loop
-    jmp _gameLoop.showCurrentScore
+    jmp _main.showCurrentScore
 
 _readOneCharacter:
     ; read one character from stdin
