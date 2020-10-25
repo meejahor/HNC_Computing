@@ -55,7 +55,7 @@ _main:
 
     ; check if player has gone bust
     mov rax, [val_Score]
-    cmp rax, 21
+    cmp al, 21
     jg .playerBust
 
     ; what to do
@@ -74,7 +74,7 @@ _main:
 
     ; check if player typed 'd' to draw again
     pop rax
-    cmp rax, 'd'
+    cmp al, 'd'
     je _drawNextCard
 
     ; end of game
@@ -90,7 +90,7 @@ _main:
 
     ; check who won
     mov rax, [val_Score]
-    cmp rax, 18
+    cmp al, 18
     je .draw
     jg .playerWon
     jmp .opponentWon
@@ -153,7 +153,7 @@ _flushStdin:
     call _readOneCharacter
     ; check if we've found the linefeed (ASCII 10)
     mov rax, [buf]
-    cmp rax, 10
+    cmp al, 10
     ; if we have then we're done
     je .finished
     ; otherwise read the next charater
@@ -175,13 +175,13 @@ _printNumber:
     ; this removes leading zeroes
     mov r9, 0
 .loop:
-    ; divide ax by divisor
+    ; divide rax by divisor
     xor rdx, rdx
     div r8
     ; rdx is the remainder, which we store for later
     push rdx
     ; if we've found anything other than 0 then set r9 to 1
-    cmp rax, 0
+    cmp al, 0
     jne .foundDigit
 .checkIfPrinting:
     ; if r9 is 1 then always print
@@ -206,7 +206,6 @@ _printNumber:
 .foundDigit:
     ; when r9 is set to 1 we know to always print digits from now on
     mov r9, 1
-    jmp .checkIfPrinting
 .print:
     ; put the ASCII code for 0 in rdx
     mov rdx, '0'
