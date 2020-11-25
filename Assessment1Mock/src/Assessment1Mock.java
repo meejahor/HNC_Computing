@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 /**
  * Assessment1Mock class
  * Contains:
@@ -14,6 +12,8 @@ import java.util.Scanner;
  * @since       1.0
  */
 
+import java.util.Scanner;
+
 public class Assessment1Mock {
 
     /**
@@ -21,14 +21,32 @@ public class Assessment1Mock {
      */
     private static final Scanner keyboard = new Scanner(System.in);
 
+    private static String GetValidName() {
+        String name;
+        boolean valid;
+        do {
+            name = keyboard.nextLine();
+
+            // regex to check the string is alphabetic
+            // the '+' makes sure the string isn't empty
+            valid = name.matches("[a-zA-Z]+");
+
+            if (!valid) {
+                System.out.print("Invalid name. Please enter a valid name: ");
+            }
+        } while (!valid);
+
+        return name;
+    }
+
     /**
      * Get the user's forename
      * @return the user's input to be used as their forename in password generation
      */
     private static String GetForename() {
         String forename;
-        System.out.println("\nPlease enter your first name:");
-        forename = keyboard.next();
+        System.out.print("\nPlease enter your first name: ");
+        forename = GetValidName();
         return forename;
     }
 
@@ -38,8 +56,8 @@ public class Assessment1Mock {
      */
     private static String GetSurname() {
         String surname;
-        System.out.println("\nPlease enter your last name:");
-        surname = keyboard.next();
+        System.out.print("Please enter your last name: ");
+        surname = GetValidName();
         return surname;
     }
 
@@ -59,13 +77,14 @@ public class Assessment1Mock {
         username = surnameUpperCase;
         username += forenameFirstCharacterLowerCase;
 
-        System.out.println("\nYour username is: " + username + "\n");
+        System.out.println("Your username is: " + username + "\n");
     }
 
     /**
      * Get the user's forename and surname and display a username based on that information
      */
     private static void GenerateUsername() {
+        System.out.print("\nThis function will generate a username.");
         final String forename = GetForename();
         final String surname = GetSurname();
         DisplayUsername(forename, surname);
@@ -76,9 +95,25 @@ public class Assessment1Mock {
      * @return the value entered by the user
      */
     private static double GetSide() {
-        double length;
-        length = keyboard.nextDouble();
-        return length;
+        String input;
+        double length = 0;
+        boolean valid;
+
+        do {
+            input = keyboard.nextLine();
+            valid = true;
+
+            try {
+                // note this will allow 'd' suffix, but if someone's using that then fine
+                // it doesn't affect the validity of the output
+                length = Double.parseDouble(input);
+            } catch (NumberFormatException nfe) {
+                valid = false;
+                System.out.print("Invalid value. Please enter a valid value: ");
+            }
+        } while (!valid);
+
+        return Math.abs(length);
     }
 
     /**
@@ -89,9 +124,9 @@ public class Assessment1Mock {
     private static void DisplayIfSquare(double width, double height) {
         // Double.compare() is used to avoid direct floating point comparison producing a false negative
         if (Double.compare(width, height) == 0) {
-            System.out.println("\nThe shape is square.\n");
+            System.out.println("The shape is square.\n");
         } else {
-            System.out.println("\nThe shape is not square.\n");
+            System.out.println("The shape is not square.\n");
         }
     }
 
@@ -100,9 +135,10 @@ public class Assessment1Mock {
      */
     private static void CheckIfShapeIsSquare() {
         double width, height;
-        System.out.println("\nPlease enter the width:");
+        System.out.print("\nThis function will determine if a shape is square.");
+        System.out.print("\nPlease enter the width: ");
         width = GetSide();
-        System.out.println("\nPlease enter the height:");
+        System.out.print("Please enter the height: ");
         height = GetSide();
         DisplayIfSquare(width, height);
     }
@@ -128,7 +164,11 @@ public class Assessment1Mock {
             System.out.println("3. Exit");
 
             // get the user's choice
-            userInput = keyboard.next();
+            userInput = keyboard.nextLine();
+
+            if (userInput.isEmpty()) {
+                continue;
+            }
 
             // only check the first character of the user's choice
             switch(userInput.charAt(0)) {
@@ -140,6 +180,7 @@ public class Assessment1Mock {
                     break;
                 case '3':
                     System.out.println("Bye!");
+                    keyboard.close();
                     return;
                 default:
                     // if an invalid choice has been entered then tell the user before the do...while loop repeats
